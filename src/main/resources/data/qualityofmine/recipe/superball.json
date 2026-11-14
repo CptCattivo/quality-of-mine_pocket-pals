@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"key": {
+		"L": "minecraft:lapis_lazuli",
+		"P": "qualityofmine:pokeball"
+	},
+	"pattern": [
+		"LLL",
+		"LPL",
+		"LLL"
+	],
+	"result": {
+		"id": "qualityofmine:superball"
+	}
+}

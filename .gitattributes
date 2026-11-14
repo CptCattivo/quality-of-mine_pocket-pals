@@ -1,0 +1,14 @@
+# Zeilenenden automatisch normalisieren
+* text=auto
+
+# Shell-Skripte brauchen LF, sonst laufen sie unter Linux/macOS nicht
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Windows-Skripte brauchen CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binärdateien
+*.jar binary
+*.png binary

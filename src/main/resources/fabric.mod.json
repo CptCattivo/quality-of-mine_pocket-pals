@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "pocketpals",
+	"version": "${version}",
+	"name": "Pocket Pals",
+	"description": "Pokébälle zum Fangen und Mitnehmen von Tieren (Pokéball, Superball, Hyperball) und ein Gürtel mit 6 Plätzen für Bälle mit Tier.",
+	"authors": [
+		"Christian"
+	],
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.qualityofmine.pocketpals.PocketPals"
+		],
+		"client": [
+			"de.qualityofmine.pocketpals.PocketPalsClient"
+		]
+	},
+	"mixins": [
+		"pocketpals.mixins.json",
+		{
+			"config": "pocketpals.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"breaks": {
+		"qualityofmine": "*"
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

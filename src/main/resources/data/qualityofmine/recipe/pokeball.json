@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"key": {
+		"R": "minecraft:redstone",
+		"C": "#minecraft:coals",
+		"D": "minecraft:diamond",
+		"Q": "minecraft:quartz"
+	},
+	"pattern": [
+		"RRR",
+		"CDC",
+		"QQQ"
+	],
+	"result": {
+		"id": "qualityofmine:pokeball"
+	}
+}

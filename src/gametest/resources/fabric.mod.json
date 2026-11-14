@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "pocketpals-test",
+	"version": "1.0.0",
+	"name": "Pocket Pals Tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"de.qualityofmine.pocketpals.gametest.PocketPalsClientGameTest",
+			"de.qualityofmine.pocketpals.gametest.PocketPalsServerGameTest"
+		]
+	},
+	"depends": {
+		"pocketpals": "*"
+	}
+}
