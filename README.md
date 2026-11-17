@@ -23,7 +23,7 @@ Voraussetzungen:
 - Minecraft Java Edition mit dem offiziellen Launcher
 - Java 25 (eine JRE reicht für die Installation)
 
-Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-1.0.0.jar` werden
+Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-2.0.0.jar` werden
 direkt weitergegeben, zum Beispiel als ZIP-Datei.
 
 1. **Sichere deine Welten.** Kopiere dazu den Ordner `%APPDATA%\.minecraft\saves` an einen anderen Ort.
@@ -55,7 +55,7 @@ Beide würden dieselben Inhalte anmelden. Die Mod meldet das beim Start mit eine
 
 - **Update:** Neue `installieren.cmd` und neue JAR in einen Ordner legen und das Skript erneut ausführen. Die alte Version dieser Mod wird ersetzt.
   Wer selbst baut, führt vorher `gradlew build` aus.
-- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-1.0.0.jar` löschen.
+- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-2.0.0.jar` löschen.
 
 Ohne die Mod verschwindet aus einer Welt alles, was zu ihr gehört: alle Bälle samt gefangener Tiere, alle Gürtel und alle Köcher samt Pfeilen darin.
 
@@ -75,7 +75,7 @@ Meldung ab, die beide Versionen nennt.
 
 2. Starte den Server einmal mit `java -jar fabric-server-launch.jar nogui` und stimme der Mojang-EULA in `eula.txt` zu
    (`eula=true`). Das ist deine Entscheidung als Betreiber.
-3. Kopiere `pocket-pals-1.0.0.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
+3. Kopiere `pocket-pals-2.0.0.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
 4. Starte den Server neu. Deine Mitspieler installieren den Mod wie oben beschrieben mit `installieren.cmd`.
 
 Das Update läuft genauso: alte JAR im Ordner `mods` des Servers durch die neue ersetzen und alle Mitspieler
@@ -168,7 +168,7 @@ gradlew productionClientTest
 
 | Befehl | Zweck |
 |---|---|
-| `build` | Baut `build\libs\pocket-pals-1.0.0.jar` und führt die Unit-Tests aus |
+| `build` | Baut `build\libs\pocket-pals-2.0.0.jar` und führt die Unit-Tests aus |
 | `test` | Unit-Tests der Logik |
 | `runClient` | Startet das Spiel mit dem Mod in einem eigenen Testordner |
 | `runClientGameTest` | Spielt Pocket Pals automatisch im echten Spiel durch, anschließend gegen einen echten dedizierten Server (Beitritt mit Versionsabfrage) |
