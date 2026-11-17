@@ -1,11 +1,10 @@
 package de.qualityofmine.pocketpals.feature.belt;
 
-import de.qualityofmine.pocketpals.feature.pokeball.Pokeballs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-/** Einer der 6 Plätze im Gürtel. Es passen nur Pokébälle mit gefangenem Tier hinein, sonst nichts. */
+/** Einer der 6 Plätze in Gürtel oder Köcher. Was hineinpasst, bestimmt das getragene Item. */
 public final class BeltContentSlot extends Slot {
 	private final Player player;
 
@@ -16,17 +15,19 @@ public final class BeltContentSlot extends Slot {
 
 	@Override
 	public boolean mayPlace(final ItemStack stack) {
-		return Pokeballs.isFilled(stack) && isActive();
+		WearableItem worn = BeltFeature.holderOf(player).wornItem();
+		return worn != null && worn.accepts(stack);
 	}
 
 	@Override
 	public int getMaxStackSize() {
-		return 1;
+		WearableItem worn = BeltFeature.holderOf(player).wornItem();
+		return worn == null ? 1 : worn.contentStackSize();
 	}
 
-	/** Ohne angelegten Gürtel gibt es keine Plätze. */
+	/** Ohne Gürtel oder Köcher gibt es keine Plätze. */
 	@Override
 	public boolean isActive() {
-		return !BeltFeature.beltOf(player).isEmpty();
+		return BeltFeature.holderOf(player).wornItem() != null;
 	}
 }

@@ -4,5 +4,8 @@
 	"entity.qualityofmine.pokeball": "Pokéball",
 	"item.qualityofmine.superball": "Superball",
 	"item.qualityofmine.hyperball": "Hyperball",
-	"item.qualityofmine.belt": "Gürtel"
+	"item.qualityofmine.belt": "Gürtel",
+	"key.qualityofmine.throw_belt_ball": "Ball aus dem Gürtel werfen",
+	"key.category.qualityofmine.pocketpals": "Pocket Pals",
+	"item.qualityofmine.quiver": "Köcher"
 }

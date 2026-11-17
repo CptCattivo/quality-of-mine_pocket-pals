@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -45,7 +46,15 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.SpectralArrow;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -113,6 +122,8 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 			testBallUpgrades(server);
 			testRecaptureAndFlee(context, server);
 			testBelt(server);
+			testBeltClick(context, server);
+			testQuiver(context, server);
 			testBeltDeath(context, server);
 		}
 	}
@@ -381,7 +392,171 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		check(server.computeOnServer(s -> beltSlot(s, 1).getItem().isEmpty() && !beltSlot(s, 1).isActive()), "Ohne Gürtel sind die Plätze wieder leer");
 		server.runOnServer(s -> beltSlot(s, 0).set(taken));
 		check(server.computeOnServer(s -> Pokeballs.isFilled(beltSlot(s, 1).getItem())), "Wieder angelegt ist der Inhalt zurück");
+
+		// Wurf direkt aus dem Gürtel, ohne das Inventar zu öffnen
+		server.runOnServer(s -> BeltFeature.throwBall(player(s), 2));
+		check(server.computeOnServer(s -> Pokeballs.isFilled(beltSlot(s, 1).getItem())), "Ein leerer Gürtelplatz wirft nichts");
+		check(!ballInFlight(server), "Aus einem leeren Platz fliegt kein Ball");
+		server.runOnServer(s -> BeltFeature.throwBall(player(s), 0));
+		check(server.computeOnServer(s -> beltSlot(s, 1).getItem().isEmpty() && Pokeballs.isFilled(beltSlot(s, 6).getItem())) && ballInFlight(server),
+			"Der Wurf aus dem Gürtel leert nur diesen Platz und lässt den Ball fliegen");
+
+		// Aufgehobene volle Bälle füllen zuerst den Gürtel, erst danach das Inventar
+		server.runCommand("clear @a minecraft:superball_filled");
+		server.runOnServer(s -> player(s).getInventory().add(filled.copy()));
+		check(server.computeOnServer(s -> Pokeballs.isFilled(beltSlot(s, 1).getItem()) && player(s).getInventory().countItem(filled.getItem()) == 0),
+			"Ein aufgehobener voller Ball landet im Gürtel");
+		server.runOnServer(s -> {
+			// Zwei Plätze sind schon belegt, vier Bälle füllen den Rest, der fünfte hat keinen Platz mehr
+			for (int i = 0; i < BeltFeature.CONTENT_SIZE - 1; i++) {
+				player(s).getInventory().add(filled.copy());
+			}
+		});
+		check(server.computeOnServer(s -> player(s).getInventory().countItem(filled.getItem()) == 1
+			&& IntStream.rangeClosed(1, BeltFeature.CONTENT_SIZE).allMatch(i -> Pokeballs.isFilled(beltSlot(s, i).getItem()))),
+			"Bei vollem Gürtel kommt der Ball ins normale Inventar");
+		server.runOnServer(s -> player(s).getInventory().add(new ItemStack(Pokeballs.empty(BallType.POKEBALL))));
+		check(server.computeOnServer(s -> player(s).getInventory().countItem(Pokeballs.empty(BallType.POKEBALL)) == 1),
+			"Ein leerer Ball bleibt im Inventar");
 		server.runOnServer(s -> beltSlot(s, 0).set(ItemStack.EMPTY));
+	}
+
+	/** Klick im geöffneten Inventar auf einen Ball im Gürtel: Er wandert an den Mauszeiger und wird nicht weggeworfen. */
+	private static void testBeltClick(final ClientGameTestContext context, final TestServerContext server) {
+		server.runCommand("clear @a");
+		ItemStack filled = filledSheepBall(BallType.POKEBALL);
+		server.runOnServer(s -> {
+			beltSlot(s, 0).set(new ItemStack(Belts.BELT));
+			beltSlot(s, 1).set(filled.copy());
+		});
+		context.waitTicks(5);
+		context.setScreen(() -> new InventoryScreen(net.minecraft.client.Minecraft.getInstance().player));
+		context.waitTicks(5);
+		double[] position = context.computeOnClient(minecraft -> {
+			Slot slot = minecraft.player.inventoryMenu.slots.stream().filter(BeltFeature::isBeltSlot).skip(1).findFirst().orElseThrow();
+			int scale = minecraft.getWindow().getGuiScale();
+			int left = (minecraft.getWindow().getGuiScaledWidth() - IMAGE_WIDTH) / 2;
+			int top = (minecraft.getWindow().getGuiScaledHeight() - IMAGE_HEIGHT) / 2;
+			return new double[]{(left + slot.x + 8) * scale, (top + slot.y + 8) * scale};
+		});
+		context.getInput().setCursorPos(position[0], position[1]);
+		context.waitTicks(2);
+		context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
+		context.waitTicks(5);
+		check(context.computeOnClient(minecraft -> Pokeballs.isFilled(minecraft.player.inventoryMenu.getCarried())),
+			"Ein Klick auf den Ball im Gürtel nimmt ihn an den Mauszeiger");
+		check(itemsOfClass(server, stack -> Pokeballs.isFilled(stack)).isEmpty(), "Der Ball im Gürtel wird nicht weggeworfen");
+		context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
+		context.waitTicks(5);
+		check(server.computeOnServer(s -> Pokeballs.isFilled(beltSlot(s, 1).getItem())) && itemsOfClass(server, stack -> Pokeballs.isFilled(stack)).isEmpty(),
+			"Ein zweiter Klick legt den Ball zurück in den Gürtel");
+		context.setScreen(() -> null);
+		server.runOnServer(s -> beltSlot(s, 0).set(ItemStack.EMPTY));
+	}
+
+	private static ItemStack quiverItem(final TestServerContext server, final int index) {
+		return server.computeOnServer(s -> beltSlot(s, index + 1).getItem().copy());
+	}
+
+	/** Schießt mit einem voll gespannten Bogen, wie beim Loslassen der rechten Maustaste. */
+	private static void shootBow(final TestServerContext server, final boolean infinity) {
+		server.runOnServer(s -> {
+			ServerPlayer player = player(s);
+			ItemStack bow = new ItemStack(Items.BOW);
+			if (infinity) {
+				bow.enchant(s.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.INFINITY), 1);
+			}
+			player.setItemInHand(InteractionHand.MAIN_HAND, bow);
+			bow.getItem().releaseUsing(bow, player.level(), player, bow.getUseDuration(player) - 20);
+		});
+	}
+
+	private static int arrowsInFlight(final TestServerContext server, final Class<? extends AbstractArrow> type) {
+		return server.computeOnServer(s -> player(s).level().getEntitiesOfClass(type, around(player(s))).size());
+	}
+
+	/** Der Köcher: Rezept, nur Pfeile, zuerst beim Aufheben, Auswahl per Alt und Mausrad, Verschießen und Unendlichkeit. */
+	private static void testQuiver(final ClientGameTestContext context, final TestServerContext server) {
+		server.runCommand("clear @a");
+		server.runCommand("kill @e[type=minecraft:item]");
+		check(craft(server, List.of(new ItemStack(Items.STRING), new ItemStack(Items.RABBIT_HIDE), new ItemStack(Items.LEATHER)), 1, 3).is(Belts.QUIVER),
+			"Faden, Kaninchenfell, Leder untereinander ergibt einen Köcher");
+		check(server.computeOnServer(s -> beltSlot(s, 0).mayPlace(new ItemStack(Belts.QUIVER))), "Der Köcher passt auf den Platz des Gürtels");
+		server.runOnServer(s -> beltSlot(s, 0).set(new ItemStack(Belts.QUIVER)));
+		check(server.computeOnServer(s -> beltSlot(s, 1).mayPlace(new ItemStack(Items.ARROW)) && beltSlot(s, 1).mayPlace(new ItemStack(Items.SPECTRAL_ARROW))
+			&& !beltSlot(s, 1).mayPlace(filledSheepBall(BallType.POKEBALL)) && !beltSlot(s, 1).mayPlace(new ItemStack(Items.DIRT))),
+			"In den Köcher passen nur Pfeile");
+		check(server.computeOnServer(s -> beltSlot(s, 1).getMaxStackSize(new ItemStack(Items.ARROW))) == 64, "Ein Köcherplatz fasst einen vollen Stapel");
+
+		// Aufheben: Pfeile landen zuerst im Köcher
+		ItemStack healing = PotionContents.createItemStack(Items.TIPPED_ARROW, Potions.HEALING).copyWithCount(3);
+		server.runOnServer(s -> {
+			player(s).getInventory().add(new ItemStack(Items.ARROW, 20));
+			player(s).getInventory().add(new ItemStack(Items.SPECTRAL_ARROW, 5));
+			player(s).getInventory().add(healing.copy());
+		});
+		check(quiverItem(server, 0).is(Items.ARROW) && quiverItem(server, 0).getCount() == 20 && quiverItem(server, 1).is(Items.SPECTRAL_ARROW)
+			&& quiverItem(server, 2).is(Items.TIPPED_ARROW) && server.computeOnServer(s -> player(s).getInventory().countItem(Items.ARROW)) == 0,
+			"Aufgehobene Pfeile landen im Köcher und nicht im Inventar");
+		server.runOnServer(s -> {
+			ItemEntity arrows = new ItemEntity(player(s).level(), player(s).getX(), player(s).getY(), player(s).getZ(), new ItemStack(Items.ARROW, 10));
+			player(s).level().addFreshEntity(arrows);
+		});
+		server.waitFor(s -> beltSlot(s, 1).getItem().getCount() == 30, 100);
+		check(quiverItem(server, 0).getCount() == 30, "Pfeile vom Boden kommen auf den gleichen Stapel im Köcher");
+		context.waitTicks(5);
+		context.takeScreenshot("qom_quiver_hud");
+		context.setScreen(() -> new InventoryScreen(net.minecraft.client.Minecraft.getInstance().player));
+		context.waitTicks(5);
+		context.takeScreenshot("qom_quiver_inventory");
+		context.setScreen(() -> null);
+
+		// Umschalt-Klick aus einer Truhe
+		SimpleContainer chest = new SimpleContainer(27);
+		chest.setItem(0, new ItemStack(Items.ARROW, 16));
+		server.runOnServer(s -> player(s).openMenu(new SimpleMenuProvider((id, inventory, p) -> ChestMenu.threeRows(id, inventory, chest), Component.literal("Test"))));
+		context.waitTicks(5);
+		server.runOnServer(s -> player(s).containerMenu.quickMoveStack(player(s), 0));
+		check(quiverItem(server, 0).getCount() == 46 && chest.getItem(0).isEmpty(), "Umschalt-Klick aus der Truhe legt Pfeile in den Köcher");
+		server.runOnServer(s -> player(s).closeContainer());
+		context.waitTicks(5);
+
+		// Auswahl über die echte Eingabe: Alt gedrückt halten und scrollen
+		context.getInput().holdKey(InputConstants.KEY_LALT);
+		context.getInput().scroll(-1);
+		context.waitTicks(5);
+		context.getInput().releaseKey(InputConstants.KEY_LALT);
+		check(server.computeOnServer(s -> BeltFeature.holderOf(player(s)).selected()) == 1, "Alt und Mausrad wählen den nächsten Platz, auch auf dem Server");
+		check(server.computeOnServer(s -> player(s).getInventory().getSelectedSlot()) == 0, "Die Item-Leiste bleibt dabei stehen");
+
+		// Der Bogen verschießt den gewählten Spektralpfeil aus dem Köcher
+		// Ein Pfeil direkt auf einem Inventarplatz, für die Prüfung ohne Köcher weiter unten
+		server.runOnServer(s -> player(s).getInventory().setItem(9, new ItemStack(Items.ARROW, 1)));
+		check(server.computeOnServer(s -> player(s).getProjectile(new ItemStack(Items.BOW)).is(Items.SPECTRAL_ARROW)), "Der Bogen nimmt den gewählten Pfeil");
+		shootBow(server, false);
+		check(quiverItem(server, 1).getCount() == 4 && arrowsInFlight(server, SpectralArrow.class) == 1, "Der Schuss verbraucht den Spektralpfeil aus dem Köcher");
+		check(quiverItem(server, 0).getCount() == 46, "Die normalen Pfeile im Köcher bleiben unberührt");
+
+		// Unendlichkeit verbraucht auch Trankpfeile nicht
+		server.runOnServer(s -> BeltFeature.holderOf(player(s)).select(2));
+		shootBow(server, true);
+		check(quiverItem(server, 2).getCount() == 3, "Mit Unendlichkeit bleibt auch ein Trankpfeil erhalten");
+
+		// Ist der gewählte Platz leer, kommt der erste passende Pfeil aus dem Köcher
+		server.runOnServer(s -> BeltFeature.holderOf(player(s)).select(5));
+		check(server.computeOnServer(s -> player(s).getProjectile(new ItemStack(Items.BOW)).is(Items.ARROW)), "Ein leerer Platz nimmt den ersten Pfeil im Köcher");
+
+		// Abgelegt nimmt der Köcher seinen Inhalt mit, der Gürtel nimmt keine Pfeile
+		ItemStack taken = server.computeOnServer(s -> beltSlot(s, 0).remove(1));
+		check(taken.is(Belts.QUIVER) && taken.get(net.minecraft.core.component.DataComponents.CONTAINER).nonEmptyItemCopyStream().count() == 3,
+			"Der Köcher nimmt seine Pfeile mit, wenn man ihn ablegt");
+		check(server.computeOnServer(s -> player(s).getProjectile(new ItemStack(Items.BOW)).is(Items.ARROW)) && server.computeOnServer(s -> player(s).getInventory().countItem(Items.ARROW)) == 1,
+			"Ohne Köcher nimmt der Bogen wieder Pfeile aus dem Inventar");
+		server.runOnServer(s -> beltSlot(s, 0).set(new ItemStack(Belts.BELT)));
+		check(server.computeOnServer(s -> !beltSlot(s, 1).mayPlace(new ItemStack(Items.ARROW))), "In den Gürtel passen keine Pfeile");
+		server.runOnServer(s -> beltSlot(s, 0).set(ItemStack.EMPTY));
+		server.runCommand("kill @e[type=#minecraft:arrows]");
+		server.runCommand("clear @a");
 	}
 
 	/** Ebnet und räumt eine Fläche vor dem Spieler frei, damit kein Hügel oder Baum die Wurfbahn versperrt. */

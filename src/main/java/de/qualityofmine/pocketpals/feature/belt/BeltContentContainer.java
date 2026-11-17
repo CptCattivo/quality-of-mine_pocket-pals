@@ -1,14 +1,11 @@
 package de.qualityofmine.pocketpals.feature.belt;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 
-/** Die 6 Plätze im Gürtel. Sie lesen und schreiben den Inhalt des angelegten Gürtels, ohne Gürtel sind sie leer. */
+/** Die 6 Plätze in Gürtel oder Köcher. Sie arbeiten direkt auf dem Inhalt des Halters, ohne getragenes Item sind sie leer. */
 final class BeltContentContainer implements Container {
 	private final Player player;
 
@@ -16,20 +13,12 @@ final class BeltContentContainer implements Container {
 		this.player = player;
 	}
 
-	private NonNullList<ItemStack> read() {
-		NonNullList<ItemStack> items = NonNullList.withSize(BeltFeature.CONTENT_SIZE, ItemStack.EMPTY);
-		ItemStack belt = BeltFeature.beltOf(player);
-		if (!belt.isEmpty()) {
-			belt.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(items);
-		}
-		return items;
+	private BeltHolder holder() {
+		return BeltFeature.holderOf(player);
 	}
 
-	private void write(final NonNullList<ItemStack> items) {
-		ItemStack belt = BeltFeature.beltOf(player);
-		if (!belt.isEmpty()) {
-			belt.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(items));
-		}
+	private boolean isWorn() {
+		return holder().wornItem() != null;
 	}
 
 	@Override
@@ -39,35 +28,29 @@ final class BeltContentContainer implements Container {
 
 	@Override
 	public boolean isEmpty() {
-		return read().stream().allMatch(ItemStack::isEmpty);
+		return !isWorn() || holder().contents().stream().allMatch(ItemStack::isEmpty);
 	}
 
 	@Override
 	public ItemStack getItem(final int slot) {
-		return read().get(slot);
+		return isWorn() ? holder().contents().get(slot) : ItemStack.EMPTY;
 	}
 
 	@Override
 	public ItemStack removeItem(final int slot, final int count) {
-		NonNullList<ItemStack> items = read();
-		ItemStack removed = ContainerHelper.removeItem(items, slot, count);
-		write(items);
-		return removed;
+		return isWorn() ? ContainerHelper.removeItem(holder().contents(), slot, count) : ItemStack.EMPTY;
 	}
 
 	@Override
 	public ItemStack removeItemNoUpdate(final int slot) {
-		NonNullList<ItemStack> items = read();
-		ItemStack removed = ContainerHelper.takeItem(items, slot);
-		write(items);
-		return removed;
+		return isWorn() ? ContainerHelper.takeItem(holder().contents(), slot) : ItemStack.EMPTY;
 	}
 
 	@Override
 	public void setItem(final int slot, final ItemStack stack) {
-		NonNullList<ItemStack> items = read();
-		items.set(slot, stack);
-		write(items);
+		if (isWorn()) {
+			holder().contents().set(slot, stack);
+		}
 	}
 
 	@Override
@@ -81,6 +64,6 @@ final class BeltContentContainer implements Container {
 
 	@Override
 	public void clearContent() {
-		write(NonNullList.withSize(BeltFeature.CONTENT_SIZE, ItemStack.EMPTY));
+		holder().contents().clear();
 	}
 }

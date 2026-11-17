@@ -36,15 +36,19 @@ public class PokeballItem extends Item {
 	@Override
 	public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
-		// Geworfen wird wie beim Ei
+		throwBall(level, player, stack);
+		stack.consume(1, player);
+		return InteractionResult.SUCCESS;
+	}
+
+	/** Wirft den Ball wie ein Ei. Der Aufrufer entfernt ihn danach aus seinem Platz, egal ob Hand oder Gürtel. */
+	public void throwBall(final Level level, final Player player, final ItemStack stack) {
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS,
 			0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
 		if (level instanceof ServerLevel serverLevel) {
 			Projectile.spawnProjectileFromRotation(ThrownPokeball::new, serverLevel, stack, player, 0.0F, 1.5F, 1.0F);
 		}
 		player.awardStat(Stats.ITEM_USED.get(this));
-		stack.consume(1, player);
-		return InteractionResult.SUCCESS;
 	}
 
 	/** Mit Tier darin steht es in Klammern hinter dem Namen, zum Beispiel „Pokéball (Schaf)“. */

@@ -1,6 +1,6 @@
 # Pocket Pals
 
-Pokébälle zum Fangen und Mitnehmen von Tieren (Pokéball, Superball, Hyperball) und ein Gürtel mit 6 Plätzen für Bälle mit Tier.
+Pokébälle zum Fangen und Mitnehmen von Tieren (Pokéball, Superball, Hyperball) und ein Gürtel mit 6 Plätzen für Bälle mit Tier. Dazu ein Köcher mit 6 Plätzen für Pfeile.
 
 Teil der Mod-Reihe *Quality of Mine*. Jedes Feature des früheren Gesamt-Mods ist jetzt eine eigene Mod, die sich einzeln
 installieren lässt. Alle Mods der Reihe laufen auf Einzelspielerwelten und auf Mehrspieler-Servern und funktionieren
@@ -13,7 +13,7 @@ unabhängig voneinander.
 | Wide Hotbar | `wide-hotbar` | Item-Leiste mit 11 Plätzen |
 | Sleep Lapse | `sleep-lapse` | Zeitraffer beim Schlafen |
 | Breeding Break | `breeding-break` | Ruhepause nach der Paarung |
-| Pocket Pals (diese Mod) | `pocket-pals` | Bälle zum Fangen von Tieren und Gürtel dafür |
+| Pocket Pals (diese Mod) | `pocket-pals` | Bälle zum Fangen von Tieren, Gürtel dafür und Köcher für Pfeile |
 
 ## Installation
 
@@ -57,7 +57,7 @@ Beide würden dieselben Inhalte anmelden. Die Mod meldet das beim Start mit eine
   Wer selbst baut, führt vorher `gradlew build` aus.
 - **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-1.0.0.jar` löschen.
 
-Ohne die Mod verschwindet aus einer Welt alles, was zu ihr gehört: alle Bälle samt gefangener Tiere und alle Gürtel.
+Ohne die Mod verschwindet aus einer Welt alles, was zu ihr gehört: alle Bälle samt gefangener Tiere, alle Gürtel und alle Köcher samt Pfeilen darin.
 
 ## Server
 
@@ -83,7 +83,7 @@ aktualisieren lassen.
 
 Das ändert sich auf einem Server:
 
-- **Gürtel und gefangene Tiere** gehören jedem Spieler einzeln und stehen in dessen Spielerdaten beziehungsweise im Ball.
+- **Gürtel, Köcher und gefangene Tiere** gehören jedem Spieler einzeln und stehen in dessen Spielerdaten beziehungsweise im Ball.
   Sie bleiben nach einem Neustart des Servers erhalten.
 - **Server ohne die Mod:** Wer mit installierter Mod auf einen fremden Server ohne sie geht, sollte sie dort nicht nutzen. Dafür nimmst du das normale Vanilla-Profil des Launchers.
 
@@ -129,9 +129,29 @@ Ein Gürtel mit 6 Plätzen für volle Bälle.
   Lege ihn dort ab oder klicke mit dem Gürtel in der Hand die rechte Maustaste, dann wird er angelegt.
 - **Die 6 Plätze** erscheinen unter dem Inventar, sobald ein Gürtel getragen wird. Es passen nur Bälle mit gefangenem Tier hinein,
   keine leeren Bälle und keine anderen Gegenstände.
+- **Im Spiel:** Ein Gürtel mit Inhalt zeigt seine 6 Plätze als Leiste über den Statusanzeigen, beim Wechseln des Platzes erscheint kurz der Name des gewählten Tiers darüber.
+  Mit gedrückter **Alt-Taste** wählt das Mausrad einen Platz, **Alt + Rechtsklick** oder die Taste **G** (änderbar in den Steuerungs-Einstellungen) wirft den gewählten Ball.
+- **Aufheben:** Ein voller Ball, den du aufhebst, landet zuerst im ersten freien Gürtelplatz. Erst bei vollem Gürtel kommt er ins normale Inventar.
 - Der Inhalt steckt im Gürtel: Legst du ihn ab, nimmt er die Bälle mit.
 - **Tod:** Der Gürtel fällt wie die Rüstung mit seinem Inhalt zu Boden. Mit der Spielregel `keep_inventory` bleibt er angelegt.
 - Im Kreativ-Modus ist der Gürtel nicht erreichbar, weil das Kreativ-Inventar keinen Platz dafür hat.
+
+### Köcher
+
+Ein Köcher mit 6 Plätzen für Pfeile. Er wird auf demselben Platz getragen wie der Gürtel, also immer nur einer von beiden.
+
+**Rezept:** untereinander Faden, Kaninchenfell, Leder.
+
+- **Anlegen, Ablegen, Tod und Kreativ-Modus** funktionieren wie beim Gürtel. Der Köcher nimmt seine Pfeile beim Ablegen mit.
+- **Die 6 Plätze** nehmen nur Pfeile auf (normale, Spektral- und Trankpfeile), jeder Platz einen vollen Stapel von 64.
+- **Aufheben:** Pfeile vom Boden, aus abgeschossenen Pfeilen und per Umschalt-Klick aus Truhen, Öfen und anderen Menüs landen zuerst
+  im Köcher, auf gleichen Stapeln oder in freien Plätzen. Erst was dort nicht mehr passt, kommt ins normale Inventar.
+- **Im Spiel:** Die 6 Plätze stehen mit der Anzahl als Leiste über den Statusanzeigen. Mit gedrückter **Alt-Taste** wählt das Mausrad
+  einen Platz, dabei erscheint kurz der Name des Pfeils.
+- **Schießen:** Bogen und Armbrust verschießen den gewählten Pfeil aus dem Köcher. Ist der gewählte Platz leer, nehmen sie den ersten
+  Pfeil im Köcher, ohne Pfeile im Köcher wie gewohnt aus Hand und Inventar. Werfen per Taste oder Alt + Rechtsklick gibt es beim Köcher nicht.
+- **Unendlichkeit** verbraucht mit dieser Mod keinen Pfeil mehr, egal welcher Typ, auch nicht aus dem Inventar. Wie im Originalspiel
+  lassen sich die so verschossenen Pfeile nicht aufheben.
 
 ## Entwicklung
 

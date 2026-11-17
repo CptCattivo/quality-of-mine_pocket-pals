@@ -4,5 +4,8 @@
 	"entity.qualityofmine.pokeball": "Pokéball",
 	"item.qualityofmine.superball": "Great Ball",
 	"item.qualityofmine.hyperball": "Ultra Ball",
-	"item.qualityofmine.belt": "Belt"
+	"item.qualityofmine.belt": "Belt",
+	"key.qualityofmine.throw_belt_ball": "Throw ball from belt",
+	"key.category.qualityofmine.pocketpals": "Pocket Pals",
+	"item.qualityofmine.quiver": "Quiver"
 }

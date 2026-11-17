@@ -3,7 +3,10 @@
 	"package": "de.qualityofmine.pocketpals.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"InventoryScreenMixin"
+		"AbstractRecipeBookScreenMixin",
+		"InventoryScreenMixin",
+		"MinecraftMixin",
+		"MouseHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

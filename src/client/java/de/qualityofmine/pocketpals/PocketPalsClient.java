@@ -1,6 +1,7 @@
 package de.qualityofmine.pocketpals;
 
 import de.qualityofmine.pocketpals.Feature;
+import de.qualityofmine.pocketpals.feature.belt.BeltClientFeature;
 import de.qualityofmine.pocketpals.feature.handshake.ModHandshakeClientFeature;
 import de.qualityofmine.pocketpals.feature.pokeball.PokeballClientFeature;
 import java.util.List;
@@ -11,7 +12,8 @@ public final class PocketPalsClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		List<Feature> features = List.of(
 			new ModHandshakeClientFeature(),
-			new PokeballClientFeature()
+			new PokeballClientFeature(),
+			new BeltClientFeature()
 		);
 		features.forEach(Feature::initialize);
 	}

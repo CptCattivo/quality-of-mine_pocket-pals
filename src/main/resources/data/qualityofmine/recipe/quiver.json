@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"key": {
+		"S": "minecraft:string",
+		"R": "minecraft:rabbit_hide",
+		"L": "minecraft:leather"
+	},
+	"pattern": [
+		"S",
+		"R",
+		"L"
+	],
+	"result": {
+		"id": "qualityofmine:quiver"
+	}
+}
