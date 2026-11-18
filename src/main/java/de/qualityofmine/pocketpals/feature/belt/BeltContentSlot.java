@@ -8,8 +8,9 @@ import net.minecraft.world.item.ItemStack;
 public final class BeltContentSlot extends Slot {
 	private final Player player;
 
-	BeltContentSlot(final Player player, final BeltContentContainer container, final int index) {
-		super(container, index, BeltFeature.CONTENT_X + index * BeltFeature.CONTENT_STEP, BeltFeature.CONTENT_Y);
+	/** {@code x} und {@code y} sind die Position des ersten Platzes, die übrigen folgen rechts daneben. */
+	BeltContentSlot(final Player player, final BeltContentContainer container, final int index, final int x, final int y) {
+		super(container, index, x + index * BeltFeature.CONTENT_STEP, y);
 		this.player = player;
 	}
 

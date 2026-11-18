@@ -24,6 +24,9 @@ abstract class AbstractContainerMenuMixin {
 	@Final
 	public NonNullList<Slot> slots;
 
+	@Shadow
+	protected abstract boolean moveItemStackTo(ItemStack stack, int startSlot, int endSlot, boolean backwards);
+
 	/** Hat der Gürtel einen Teil übernommen, gilt das Verschieben als erfolgreich, auch wenn für den Rest kein Platz war. */
 	@Unique
 	private boolean pocketpals$movedIntoBelt;
@@ -55,13 +58,51 @@ abstract class AbstractContainerMenuMixin {
 		}
 	}
 
-	/** Zahlentaste über einem Platz im Trankgurt: Ein Stapel von 8 Tränken darf nicht als Ganzes auf einen Inventarplatz. */
+	/**
+	 * Zahlentaste über einem Platz im Trankgurt: Ein Stapel von 8 Tränken darf nicht als Ganzes auf einen Inventarplatz.
+	 * Umschalt-Klick auf einen Platz von Gürtel, Köcher oder Trankgurt in Truhe, Braustand und so weiter: Das Menü kennt
+	 * diese Plätze nicht, deshalb wird hier verschoben, und zwar in die Plätze des Menüs selbst.
+	 */
 	@Inject(method = "doClick", at = @At("HEAD"), cancellable = true)
-	private void pocketpals$swapOversizedStack(final int slotIndex, final int buttonNum, final ContainerInput containerInput, final Player player,
+	private void pocketpals$handleBeltSlotClick(final int slotIndex, final int buttonNum, final ContainerInput containerInput, final Player player,
 		final CallbackInfo ci) {
-		if (containerInput == ContainerInput.SWAP && slotIndex >= 0 && slotIndex < this.slots.size()
-			&& BeltFeature.swapOversizedStack(this.slots.get(slotIndex), player.getInventory(), buttonNum)) {
+		if (slotIndex < 0 || slotIndex >= this.slots.size()) {
+			return;
+		}
+		Slot slot = this.slots.get(slotIndex);
+		Object menu = this;
+		if (containerInput == ContainerInput.SWAP && BeltFeature.swapOversizedStack(slot, player.getInventory(), buttonNum)) {
 			ci.cancel();
+		} else if (containerInput == ContainerInput.QUICK_MOVE && BeltFeature.isBeltSlot(slot) && !(menu instanceof InventoryMenu)) {
+			pocketpals$moveIntoMenu(slot);
+			ci.cancel();
+		}
+	}
+
+	/** Verschiebt den Inhalt eines Platzes so weit wie möglich in die Plätze des Menüs. Übergroße Stapel werden dabei einzeln verteilt. */
+	@Unique
+	private void pocketpals$moveIntoMenu(final Slot slot) {
+		int end = BeltFeature.containerSlotCount(this.slots);
+		ItemStack stack = slot.getItem();
+		boolean moved = false;
+		// Ein Aufruf füllt höchstens einen freien Platz, deshalb so lange, bis nichts mehr passt
+		while (!stack.isEmpty() && end > 0 && moveItemStackTo(stack, 0, end, false)) {
+			moved = true;
+		}
+		if (moved) {
+			if (stack.isEmpty()) {
+				slot.setByPlayer(ItemStack.EMPTY);
+			} else {
+				slot.setChanged();
+			}
+		}
+	}
+
+	/** Beim Einsammeln gleicher Items per Doppelklick bleiben Gürtel, Köcher und Trankgurt in jedem Menü unberührt. */
+	@Inject(method = "canTakeItemForPickAll", at = @At("HEAD"), cancellable = true)
+	private void pocketpals$keepBeltOnPickAll(final ItemStack carried, final Slot target, final CallbackInfoReturnable<Boolean> cir) {
+		if (BeltFeature.isBeltSlot(target)) {
+			cir.setReturnValue(false);
 		}
 	}
 }

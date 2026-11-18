@@ -2,6 +2,7 @@ package de.qualityofmine.pocketpals.feature.belt;
 
 import de.qualityofmine.pocketpals.Feature;
 import de.qualityofmine.pocketpals.PocketPals;
+import de.qualityofmine.pocketpals.mixin.AbstractContainerMenuAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -20,6 +21,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -39,6 +42,8 @@ public final class BeltFeature implements Feature {
 	public static final int CONTENT_X = 8;
 	public static final int CONTENT_Y = 167;
 	public static final int CONTENT_STEP = 18;
+	/** In anderen Menüs liegen die 6 Plätze so weit unter der Item-Leiste wie im Inventar, dort steht sie auf der Höhe 142. */
+	private static final int CONTENT_BELOW_HOTBAR = CONTENT_Y - 142;
 	/** Die Plätze 0 bis 8 der Item-Leiste und 40 für die zweite Hand, erreichbar per Zahlentaste bzw. F im Inventar. */
 	private static final int HOTBAR_SIZE = 9;
 	private static final int OFFHAND_SLOT = 40;
@@ -64,9 +69,42 @@ public final class BeltFeature implements Feature {
 		slots.add(new BeltEquipSlot(new BeltEquipContainer(player)));
 		BeltContentContainer content = new BeltContentContainer(player);
 		for (int i = 0; i < CONTENT_SIZE; i++) {
-			slots.add(new BeltContentSlot(player, content, i));
+			slots.add(new BeltContentSlot(player, content, i, CONTENT_X, CONTENT_Y));
 		}
 		return slots;
+	}
+
+	/**
+	 * Gibt einem anderen Menü mit Spielerinventar, etwa Truhe, Braustand oder Ofen, die 6 Plätze unter seiner Item-Leiste.
+	 * Server und Client rufen das auf, nachdem das Menü fertig gebaut ist. So stehen die Plätze auf beiden Seiten am Ende,
+	 * und die festen Slot-Nummern des Menüs bleiben gleich. Das Inventar hat seine Plätze schon, ein zweiter Aufruf ändert nichts.
+	 */
+	public static void addContentSlots(final AbstractContainerMenu menu) {
+		if (menu instanceof InventoryMenu || menu.slots.stream().anyMatch(BeltFeature::isBeltSlot)) {
+			return;
+		}
+		Slot firstHotbarSlot = menu.slots.stream()
+			.filter(slot -> slot.container instanceof Inventory && slot.getContainerSlot() == 0)
+			.findFirst().orElse(null);
+		if (firstHotbarSlot == null) {
+			return;
+		}
+		Player player = ((Inventory) firstHotbarSlot.container).player;
+		BeltContentContainer content = new BeltContentContainer(player);
+		AbstractContainerMenuAccessor accessor = (AbstractContainerMenuAccessor) menu;
+		for (int i = 0; i < CONTENT_SIZE; i++) {
+			accessor.pocketpals$addSlot(new BeltContentSlot(player, content, i, firstHotbarSlot.x, firstHotbarSlot.y + CONTENT_BELOW_HOTBAR));
+		}
+	}
+
+	/** Wie viele Plätze das Menü selbst hat, etwa die Truhe. Sie stehen vor dem Spielerinventar. */
+	public static int containerSlotCount(final List<Slot> slots) {
+		for (int i = 0; i < slots.size(); i++) {
+			if (slots.get(i).container instanceof Inventory || isBeltSlot(slots.get(i))) {
+				return i;
+			}
+		}
+		return slots.size();
 	}
 
 	/** Beim Einsammeln gleicher Items per Doppelklick darf der Gürtel nicht geleert werden. */

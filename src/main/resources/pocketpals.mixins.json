@@ -3,10 +3,12 @@
 	"package": "de.qualityofmine.pocketpals.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
+		"AbstractContainerMenuAccessor",
 		"AbstractContainerMenuMixin",
 		"InventoryMenuMixin",
 		"InventoryMixin",
-		"PlayerMixin"
+		"PlayerMixin",
+		"ServerPlayerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

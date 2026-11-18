@@ -23,7 +23,7 @@ Voraussetzungen:
 - Minecraft Java Edition mit dem offiziellen Launcher
 - Java 25 (eine JRE reicht für die Installation)
 
-Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-3.0.0.jar` werden
+Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-3.1.0.jar` werden
 direkt weitergegeben, zum Beispiel als ZIP-Datei.
 
 1. **Sichere deine Welten.** Kopiere dazu den Ordner `%APPDATA%\.minecraft\saves` an einen anderen Ort.
@@ -55,7 +55,7 @@ Beide würden dieselben Inhalte anmelden. Die Mod meldet das beim Start mit eine
 
 - **Update:** Neue `installieren.cmd` und neue JAR in einen Ordner legen und das Skript erneut ausführen. Die alte Version dieser Mod wird ersetzt.
   Wer selbst baut, führt vorher `gradlew build` aus.
-- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-3.0.0.jar` löschen.
+- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-3.1.0.jar` löschen.
 
 Ohne die Mod verschwindet aus einer Welt alles, was zu ihr gehört: alle Bälle samt gefangener Tiere, alle Gürtel, alle Köcher samt Pfeilen und alle Trankgurte samt Tränken darin.
 
@@ -75,7 +75,7 @@ Meldung ab, die beide Versionen nennt.
 
 2. Starte den Server einmal mit `java -jar fabric-server-launch.jar nogui` und stimme der Mojang-EULA in `eula.txt` zu
    (`eula=true`). Das ist deine Entscheidung als Betreiber.
-3. Kopiere `pocket-pals-3.0.0.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
+3. Kopiere `pocket-pals-3.1.0.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
 4. Starte den Server neu. Deine Mitspieler installieren den Mod wie oben beschrieben mit `installieren.cmd`.
 
 Das Update läuft genauso: alte JAR im Ordner `mods` des Servers durch die neue ersetzen und alle Mitspieler
@@ -133,6 +133,9 @@ Ein Gürtel mit 6 Plätzen für volle Bälle.
   Lege ihn dort ab oder klicke mit dem Gürtel in der Hand die rechte Maustaste, dann wird er angelegt.
 - **Die 6 Plätze** erscheinen unter dem Inventar, sobald ein Gürtel getragen wird. Es passen nur Bälle mit gefangenem Tier hinein,
   keine leeren Bälle und keine anderen Gegenstände.
+- **In anderen Menüs:** Auch in Truhe, Braustand, Ofen, Werkbank, beim Händler und in allen anderen Menüs mit Inventar stehen
+  die 6 Plätze unter der Item-Leiste und lassen sich wie im Inventar benutzen. Umschalt-Klick auf einen Platz legt den Inhalt
+  in das Menü, etwa in die Truhe oder die Flaschenplätze des Braustands. Den Platz zum Anlegen gibt es nur im Inventar.
 - **Im Spiel:** Ein Gürtel mit Inhalt zeigt seine 6 Plätze als Leiste über den Statusanzeigen, beim Wechseln des Platzes erscheint kurz der Name des gewählten Tiers darüber.
   Mit gedrückter **Alt-Taste** wählt das Mausrad einen Platz, **Alt + Rechtsklick** oder die Taste **G** (änderbar in den Steuerungs-Einstellungen unter „Gürtel oder Trankgurt benutzen“) wirft den gewählten Ball.
 - **Aufheben:** Ein voller Ball, den du aufhebst, landet zuerst im ersten freien Gürtelplatz. Erst bei vollem Gürtel kommt er ins normale Inventar.
@@ -193,7 +196,7 @@ gradlew productionClientTest
 
 | Befehl | Zweck |
 |---|---|
-| `build` | Baut `build\libs\pocket-pals-3.0.0.jar` und führt die Unit-Tests aus |
+| `build` | Baut `build\libs\pocket-pals-3.1.0.jar` und führt die Unit-Tests aus |
 | `test` | Unit-Tests der Logik |
 | `runClient` | Startet das Spiel mit dem Mod in einem eigenen Testordner |
 | `runClientGameTest` | Spielt Pocket Pals automatisch im echten Spiel durch, anschließend gegen einen echten dedizierten Server (Beitritt mit Versionsabfrage) |

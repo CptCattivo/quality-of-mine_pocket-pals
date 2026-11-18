@@ -51,6 +51,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -133,6 +134,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 			testBeltClick(context, server);
 			testQuiver(context, server);
 			testBandolier(context, server);
+			testBeltInMenus(context, server);
 			testBeltDeath(context, server);
 		}
 	}
@@ -790,6 +792,61 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		server.runCommand("kill @e[type=minecraft:item]");
 		server.runCommand("clear @a");
 		server.runCommand("effect clear @a");
+	}
+
+	/** Die 6 Plätze des Trankgurts erscheinen auch in Truhe und Braustand, auf Server und Client gleich, und lassen sich dort benutzen. */
+	private static void testBeltInMenus(final ClientGameTestContext context, final TestServerContext server) {
+		server.runCommand("clear @a");
+		ItemStack swiftness = PotionContents.createItemStack(Items.POTION, Potions.SWIFTNESS);
+		server.runOnServer(s -> {
+			beltSlot(s, 0).set(new ItemStack(Belts.BANDOLIER));
+			beltSlot(s, 1).set(swiftness.copyWithCount(8));
+		});
+		// Erst muss das Inventar den Trankgurt zum Client schicken, das passiert nur, solange kein anderes Menü offen ist
+		context.waitTicks(5);
+
+		// Truhe: 27 Plätze, 36 im Inventar, danach die 6 des Trankgurts
+		SimpleContainer chest = new SimpleContainer(27);
+		server.runOnServer(s -> player(s).openMenu(new SimpleMenuProvider((id, inventory, p) -> ChestMenu.threeRows(id, inventory, chest), Component.literal("Test"))));
+		context.waitTicks(5);
+		check(server.computeOnServer(s -> player(s).containerMenu.slots.size()) == 27 + 36 + 6
+			&& server.computeOnServer(s -> BeltFeature.isBeltSlot(player(s).containerMenu.slots.get(63))),
+			"Die Truhe hat auf dem Server die 6 Plätze des Trankgurts am Ende");
+		check(context.computeOnClient(minecraft -> minecraft.player.containerMenu instanceof ChestMenu && minecraft.player.containerMenu.slots.size() == 27 + 36 + 6),
+			"Der Client hat dieselben Plätze in der Truhe");
+		check(context.computeOnClient(minecraft -> {
+			Slot hotbar = minecraft.player.containerMenu.slots.get(54);
+			Slot belt = minecraft.player.containerMenu.slots.get(63);
+			return belt.x == hotbar.x && belt.y == hotbar.y + 25 && belt.getItem().getCount() == 8;
+		}), "Die Plätze liegen unter der Item-Leiste und zeigen die 8 Tränke");
+		context.takeScreenshot("qom_belt_chest");
+
+		server.runOnServer(s -> player(s).containerMenu.clicked(63, 0, ContainerInput.QUICK_MOVE, player(s)));
+		check(quiverItem(server, 0).isEmpty() && chest.countItem(Items.POTION) == 8
+			&& IntStream.range(0, 27).allMatch(i -> chest.getItem(i).getCount() <= 1),
+			"Umschalt-Klick legt die 8 Tränke einzeln in die Truhe");
+		server.runOnServer(s -> player(s).containerMenu.clicked(0, 0, ContainerInput.QUICK_MOVE, player(s)));
+		check(quiverItem(server, 0).getCount() == 1 && chest.countItem(Items.POTION) == 7,
+			"Umschalt-Klick aus der Truhe legt den Trank zurück in den Trankgurt");
+		server.runOnServer(s -> player(s).closeContainer());
+		context.waitTicks(5);
+
+		// Braustand: 5 eigene Plätze, nur die 3 Flaschenplätze nehmen Tränke
+		server.runOnServer(s -> beltSlot(s, 1).set(swiftness.copyWithCount(8)));
+		context.waitTicks(5);
+		server.runOnServer(s -> player(s).openMenu(new SimpleMenuProvider((id, inventory, p) -> new BrewingStandMenu(id, inventory), Component.literal("Test"))));
+		context.waitTicks(5);
+		check(context.computeOnClient(minecraft -> minecraft.player.containerMenu instanceof BrewingStandMenu && minecraft.player.containerMenu.slots.size() == 5 + 36 + 6),
+			"Der Braustand hat die 6 Plätze des Trankgurts");
+		context.takeScreenshot("qom_belt_brewing");
+		server.runOnServer(s -> player(s).containerMenu.clicked(5 + 36, 0, ContainerInput.QUICK_MOVE, player(s)));
+		check(server.computeOnServer(s -> IntStream.range(0, 3).allMatch(i -> player(s).containerMenu.slots.get(i).getItem().is(Items.POTION)))
+			&& quiverItem(server, 0).getCount() == 5, "Umschalt-Klick füllt die 3 Flaschenplätze des Braustands aus dem Trankgurt");
+		server.runOnServer(s -> player(s).closeContainer());
+		context.waitTicks(5);
+		server.runOnServer(s -> beltSlot(s, 0).set(ItemStack.EMPTY));
+		server.runCommand("kill @e[type=minecraft:item]");
+		server.runCommand("clear @a");
 	}
 
 	/** Ebnet und räumt eine Fläche vor dem Spieler frei, damit kein Hügel oder Baum die Wurfbahn versperrt. */
