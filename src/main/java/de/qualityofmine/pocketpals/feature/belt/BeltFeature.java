@@ -184,7 +184,7 @@ public final class BeltFeature implements Feature {
 	}
 
 	/**
-	 * Zahlentaste oder F über einem Platz im Trankgurt: Ein Stapel über der normalen Größe, etwa 8 Tränke, passt nicht auf
+	 * Zahlentaste oder F über einem Platz im Trankgurt: Ein Stapel über der normalen Größe, etwa 9 Tränke, passt nicht auf
 	 * einen Inventarplatz. Dann wandert nur so viel, wie normal auf einen Platz passt, und nur auf einen freien. Gibt true
 	 * zurück, wenn der Tausch damit erledigt ist und das Spiel ihn nicht mehr selbst ausführen darf.
 	 */

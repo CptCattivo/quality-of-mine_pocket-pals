@@ -23,7 +23,7 @@ Voraussetzungen:
 - Minecraft Java Edition mit dem offiziellen Launcher
 - Java 25 (eine JRE reicht für die Installation)
 
-Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-3.1.0.jar` werden
+Das Repository ist privat. Die Installationsdateien `installieren.cmd` und `pocket-pals-3.1.1.jar` werden
 direkt weitergegeben, zum Beispiel als ZIP-Datei.
 
 1. **Sichere deine Welten.** Kopiere dazu den Ordner `%APPDATA%\.minecraft\saves` an einen anderen Ort.
@@ -55,7 +55,7 @@ Beide würden dieselben Inhalte anmelden. Die Mod meldet das beim Start mit eine
 
 - **Update:** Neue `installieren.cmd` und neue JAR in einen Ordner legen und das Skript erneut ausführen. Die alte Version dieser Mod wird ersetzt.
   Wer selbst baut, führt vorher `gradlew build` aus.
-- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-3.1.0.jar` löschen.
+- **Deinstallation:** `%APPDATA%\.minecraft\mods\pocket-pals-3.1.1.jar` löschen.
 
 Ohne die Mod verschwindet aus einer Welt alles, was zu ihr gehört: alle Bälle samt gefangener Tiere, alle Gürtel, alle Köcher samt Pfeilen und alle Trankgurte samt Tränken darin.
 
@@ -75,7 +75,7 @@ Meldung ab, die beide Versionen nennt.
 
 2. Starte den Server einmal mit `java -jar fabric-server-launch.jar nogui` und stimme der Mojang-EULA in `eula.txt` zu
    (`eula=true`). Das ist deine Entscheidung als Betreiber.
-3. Kopiere `pocket-pals-3.1.0.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
+3. Kopiere `pocket-pals-3.1.1.jar` in den Ordner `mods` des Servers. Die Fabric API steckt bereits im Mod.
 4. Starte den Server neu. Deine Mitspieler installieren den Mod wie oben beschrieben mit `installieren.cmd`.
 
 Das Update läuft genauso: alte JAR im Ordner `mods` des Servers durch die neue ersetzen und alle Mitspieler
@@ -168,7 +168,7 @@ Ein Schultergurt mit 6 Plätzen für Tränke. Er wird auf demselben Platz getrag
 
 - **Anlegen, Ablegen, Tod und Kreativ-Modus** funktionieren wie beim Gürtel. Der Trankgurt nimmt seine Tränke beim Ablegen mit.
 - **Die 6 Plätze** nehmen Tränke, Wurf- und Verweiltränke sowie Wasser-, Honig- und unheilvolle Flaschen auf.
-  **Gleiche Flaschen stapeln sich darin zu 8**, außerhalb des Trankgurts bleibt es bei der normalen Stapelgröße.
+  **Gleiche Flaschen stapeln sich darin zu 9**, außerhalb des Trankgurts bleibt es bei der normalen Stapelgröße.
 - **Aufheben:** Tränke vom Boden und per Umschalt-Klick aus Braustand, Truhen und anderen Menüs landen zuerst im Trankgurt,
   auf gleichen Stapeln oder in freien Plätzen. Erst was dort nicht mehr passt, kommt ins normale Inventar.
 - **Herausnehmen:** Ein Klick nimmt den ganzen Stapel an die Maus, ein Rechtsklick die Hälfte. Auf einen normalen Platz legt jeder
@@ -196,7 +196,7 @@ gradlew productionClientTest
 
 | Befehl | Zweck |
 |---|---|
-| `build` | Baut `build\libs\pocket-pals-3.1.0.jar` und führt die Unit-Tests aus |
+| `build` | Baut `build\libs\pocket-pals-3.1.1.jar` und führt die Unit-Tests aus |
 | `test` | Unit-Tests der Logik |
 | `runClient` | Startet das Spiel mit dem Mod in einem eigenen Testordner |
 | `runClientGameTest` | Spielt Pocket Pals automatisch im echten Spiel durch, anschließend gegen einen echten dedizierten Server (Beitritt mit Versionsabfrage) |

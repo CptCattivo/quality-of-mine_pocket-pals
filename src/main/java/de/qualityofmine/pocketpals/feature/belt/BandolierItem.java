@@ -18,13 +18,13 @@ import net.minecraft.world.item.component.Consumable;
 
 /**
  * Der Trankgurt. Er trägt Flaschen: Tränke, Wurf- und Verweiltränke, Wasser-, Honig- und unheilvolle Flaschen. Gleiche
- * Flaschen stapeln sich darin zu 8, außerhalb bleibt es bei der normalen Stapelgröße.
+ * Flaschen stapeln sich darin zu 9, außerhalb bleibt es bei der normalen Stapelgröße.
  * <p>
  * Aus dem gewählten Platz wird getrunken, solange die Taste gehalten wird, und zwar so lange wie aus der Hand. Wurf- und
  * Verweiltränke fliegen sofort.
  */
 public class BandolierItem extends WearableItem {
-	private static final int STACK_SIZE = 8;
+	private static final int STACK_SIZE = 9;
 	/** Partikel pro Schluck, wie beim Trinken aus der Hand. */
 	private static final int SIP_PARTICLES = 5;
 	private static final int FINISH_PARTICLES = 16;

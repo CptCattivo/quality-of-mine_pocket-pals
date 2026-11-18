@@ -59,7 +59,7 @@ abstract class AbstractContainerMenuMixin {
 	}
 
 	/**
-	 * Zahlentaste über einem Platz im Trankgurt: Ein Stapel von 8 Tränken darf nicht als Ganzes auf einen Inventarplatz.
+	 * Zahlentaste über einem Platz im Trankgurt: Ein Stapel von 9 Tränken darf nicht als Ganzes auf einen Inventarplatz.
 	 * Umschalt-Klick auf einen Platz von Gürtel, Köcher oder Trankgurt in Truhe, Braustand und so weiter: Das Menü kennt
 	 * diese Plätze nicht, deshalb wird hier verschoben, und zwar in die Plätze des Menüs selbst.
 	 */

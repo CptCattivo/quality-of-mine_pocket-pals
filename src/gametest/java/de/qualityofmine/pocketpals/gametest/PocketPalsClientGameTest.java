@@ -658,7 +658,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 	}
 
 	/**
-	 * Der Trankgurt: Rezept, nur Flaschen, Stapel zu 8, Speichern, Aufheben, Trinken mit gehaltener Taste, Werfen und das
+	 * Der Trankgurt: Rezept, nur Flaschen, Stapel zu 9, Speichern, Aufheben, Trinken mit gehaltener Taste, Werfen und das
 	 * Herausnehmen von Stapeln, die außerhalb nicht stapeln.
 	 */
 	private static void testBandolier(final ClientGameTestContext context, final TestServerContext server) {
@@ -680,25 +680,25 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 			.allMatch(beltSlot(s, 1)::mayPlace)), "In den Trankgurt passen Tränke, Wurf- und Verweiltränke, Wasser-, Honig- und unheilvolle Flaschen");
 		check(server.computeOnServer(s -> Stream.of(new ItemStack(Items.ARROW), new ItemStack(Items.GLASS_BOTTLE), new ItemStack(Items.DIRT), filledSheepBall(BallType.POKEBALL))
 			.noneMatch(beltSlot(s, 1)::mayPlace)), "Pfeile, leere Flaschen und anderes passen nicht hinein");
-		check(server.computeOnServer(s -> beltSlot(s, 1).getMaxStackSize(swiftness)) == 8, "Ein Platz im Trankgurt fasst 8 Tränke, obwohl sie sonst nicht stapeln");
+		check(server.computeOnServer(s -> beltSlot(s, 1).getMaxStackSize(swiftness)) == 9, "Ein Platz im Trankgurt fasst 9 Tränke, obwohl sie sonst nicht stapeln");
 
-		// Aufheben: gleiche Tränke stapeln sich zu 8, andere bekommen einen eigenen Platz
+		// Aufheben: gleiche Tränke stapeln sich zu 9, andere bekommen einen eigenen Platz
 		server.runOnServer(s -> {
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 11; i++) {
 				player(s).getInventory().add(swiftness.copy());
 			}
 			player(s).getInventory().add(healing.copy());
 			player(s).getInventory().add(splash.copy());
 		});
-		check(quiverItem(server, 0).getCount() == 8 && quiverItem(server, 1).getCount() == 2 && ItemStack.isSameItemSameComponents(quiverItem(server, 1), swiftness)
+		check(quiverItem(server, 0).getCount() == 9 && quiverItem(server, 1).getCount() == 2 && ItemStack.isSameItemSameComponents(quiverItem(server, 1), swiftness)
 			&& ItemStack.isSameItemSameComponents(quiverItem(server, 2), healing) && quiverItem(server, 3).is(Items.SPLASH_POTION)
 			&& server.computeOnServer(s -> player(s).getInventory().countItem(Items.POTION)) == 0,
-			"Aufgehobene Tränke landen im Trankgurt, gleiche stapeln sich zu 8");
+			"Aufgehobene Tränke landen im Trankgurt, gleiche stapeln sich zu 9");
 
-		// Speichern: Der Stapel von 8 übersteht Ablegen und das Schreiben ins Format des Spielstands
+		// Speichern: Der Stapel von 9 übersteht Ablegen und das Schreiben ins Format des Spielstands
 		ItemStack taken = server.computeOnServer(s -> beltSlot(s, 0).remove(1));
-		check(taken.is(Belts.BANDOLIER) && taken.get(Belts.CONTENTS).entries().getFirst().item().count() == 8,
-			"Der abgelegte Trankgurt nimmt den Stapel von 8 Tränken mit");
+		check(taken.is(Belts.BANDOLIER) && taken.get(Belts.CONTENTS).entries().getFirst().item().count() == 9,
+			"Der abgelegte Trankgurt nimmt den Stapel von 9 Tränken mit");
 		ItemStack reloaded = server.computeOnServer(s -> {
 			RegistryOps<Tag> ops = s.registryAccess().createSerializationContext(NbtOps.INSTANCE);
 			Tag saved = ItemStack.CODEC.encodeStart(ops, taken).getOrThrow();
@@ -706,8 +706,8 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		});
 		check(ItemStack.validateStrict(reloaded).isSuccess(), "Das Spiel hält den gespeicherten Trankgurt für gültig");
 		server.runOnServer(s -> beltSlot(s, 0).set(reloaded));
-		check(quiverItem(server, 0).getCount() == 8 && quiverItem(server, 3).is(Items.SPLASH_POTION),
-			"Nach Speichern und Laden sind alle Tränke wieder da, auch der Stapel von 8");
+		check(quiverItem(server, 0).getCount() == 9 && quiverItem(server, 3).is(Items.SPLASH_POTION),
+			"Nach Speichern und Laden sind alle Tränke wieder da, auch der Stapel von 9");
 
 		// Ein Köcher aus Version 2.0.0 speicherte im Behälter des Spiels, sein Inhalt bleibt beim Anlegen erhalten
 		ItemStack oldQuiver = new ItemStack(Belts.QUIVER);
@@ -730,10 +730,10 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		context.waitTicks(10);
 		check(context.computeOnClient(minecraft -> BeltClientFeature.isDrinking(minecraft.player)), "Mit gehaltener Taste trinkt der Spieler auf dem Client");
 		check(server.computeOnServer(s -> BeltFeature.holderOf(player(s)).isDrinking()), "Auch der Server weiß, dass getrunken wird");
-		check(quiverItem(server, 0).getCount() == 8 && server.computeOnServer(s -> !player(s).hasEffect(MobEffects.SPEED)),
+		check(quiverItem(server, 0).getCount() == 9 && server.computeOnServer(s -> !player(s).hasEffect(MobEffects.SPEED)),
 			"Nach einer halben Sekunde ist der Trank noch nicht getrunken");
 		context.takeScreenshot("qom_bandolier_drinking");
-		server.waitFor(s -> beltSlot(s, 1).getItem().getCount() == 7, 60);
+		server.waitFor(s -> beltSlot(s, 1).getItem().getCount() == 8, 60);
 		context.getInput().releaseKey(InputConstants.KEY_G);
 		context.waitTicks(5);
 		check(server.computeOnServer(s -> player(s).hasEffect(MobEffects.SPEED)), "Der getrunkene Trank wirkt");
@@ -746,7 +746,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		context.waitTicks(15);
 		context.getInput().releaseKey(InputConstants.KEY_G);
 		context.waitTicks(30);
-		check(quiverItem(server, 0).getCount() == 7, "Wer zu früh loslässt, trinkt nichts");
+		check(quiverItem(server, 0).getCount() == 8, "Wer zu früh loslässt, trinkt nichts");
 
 		// Ein Wurftrank fliegt sofort
 		selectOnBothSides(context, server, 3);
@@ -759,28 +759,28 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		// Herausnehmen: Der ganze Stapel kommt an die Maus, auf einen normalen Platz passt aber nur einer
 		int stackSlot = server.computeOnServer(s -> beltSlot(s, 1).index);
 		click(server, stackSlot, 0, ContainerInput.PICKUP);
-		check(server.computeOnServer(s -> player(s).inventoryMenu.getCarried().getCount()) == 7, "Ein Klick nimmt den ganzen Stapel an die Maus");
+		check(server.computeOnServer(s -> player(s).inventoryMenu.getCarried().getCount()) == 8, "Ein Klick nimmt den ganzen Stapel an die Maus");
 		click(server, 9, 0, ContainerInput.PICKUP);
-		check(server.computeOnServer(s -> player(s).getInventory().getItem(9).getCount() == 1 && player(s).inventoryMenu.getCarried().getCount() == 6),
+		check(server.computeOnServer(s -> player(s).getInventory().getItem(9).getCount() == 1 && player(s).inventoryMenu.getCarried().getCount() == 7),
 			"Auf einen normalen Platz legt der Klick nur einen Trank");
 		click(server, stackSlot, 0, ContainerInput.PICKUP);
-		check(quiverItem(server, 0).getCount() == 6 && server.computeOnServer(s -> player(s).inventoryMenu.getCarried().isEmpty()),
+		check(quiverItem(server, 0).getCount() == 7 && server.computeOnServer(s -> player(s).inventoryMenu.getCarried().isEmpty()),
 			"Zurück in den Trankgurt geht der ganze Rest");
 
 		// Zahlentaste: Nur ein Trank wandert auf den freien Platz der Item-Leiste, der Rest bleibt im Trankgurt
 		server.runOnServer(s -> player(s).getInventory().setItem(0, ItemStack.EMPTY));
 		click(server, stackSlot, 0, ContainerInput.SWAP);
-		check(server.computeOnServer(s -> player(s).getInventory().getItem(0).getCount() == 1) && quiverItem(server, 0).getCount() == 5,
+		check(server.computeOnServer(s -> player(s).getInventory().getItem(0).getCount() == 1) && quiverItem(server, 0).getCount() == 6,
 			"Die Zahlentaste nimmt nur einen Trank aus dem Stapel");
 		server.runOnServer(s -> player(s).getInventory().setItem(1, new ItemStack(Items.DIRT)));
 		click(server, stackSlot, 1, ContainerInput.SWAP);
-		check(server.computeOnServer(s -> player(s).getInventory().getItem(1).is(Items.DIRT)) && quiverItem(server, 0).getCount() == 5,
+		check(server.computeOnServer(s -> player(s).getInventory().getItem(1).is(Items.DIRT)) && quiverItem(server, 0).getCount() == 6,
 			"Auf einen belegten Platz tauscht die Zahlentaste keinen Stapel");
 
 		// Umschalt-Klick verteilt den Stapel einzeln aufs Inventar
 		server.runCommand("clear @a minecraft:potion");
 		click(server, stackSlot, 0, ContainerInput.QUICK_MOVE);
-		check(server.computeOnServer(s -> player(s).getInventory().countItem(Items.POTION)) == 5 && quiverItem(server, 0).isEmpty(),
+		check(server.computeOnServer(s -> player(s).getInventory().countItem(Items.POTION)) == 6 && quiverItem(server, 0).isEmpty(),
 			"Umschalt-Klick holt alle Tränke aus dem Stapel ins Inventar");
 		check(server.computeOnServer(s -> IntStream.range(0, 36).allMatch(i -> player(s).getInventory().getItem(i).getCount() <= player(s).getInventory().getItem(i).getMaxStackSize())),
 			"Im normalen Inventar liegt nie mehr als ein Trank auf einem Platz");
@@ -800,7 +800,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		ItemStack swiftness = PotionContents.createItemStack(Items.POTION, Potions.SWIFTNESS);
 		server.runOnServer(s -> {
 			beltSlot(s, 0).set(new ItemStack(Belts.BANDOLIER));
-			beltSlot(s, 1).set(swiftness.copyWithCount(8));
+			beltSlot(s, 1).set(swiftness.copyWithCount(9));
 		});
 		// Erst muss das Inventar den Trankgurt zum Client schicken, das passiert nur, solange kein anderes Menü offen ist
 		context.waitTicks(5);
@@ -817,22 +817,22 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		check(context.computeOnClient(minecraft -> {
 			Slot hotbar = minecraft.player.containerMenu.slots.get(54);
 			Slot belt = minecraft.player.containerMenu.slots.get(63);
-			return belt.x == hotbar.x && belt.y == hotbar.y + 25 && belt.getItem().getCount() == 8;
-		}), "Die Plätze liegen unter der Item-Leiste und zeigen die 8 Tränke");
+			return belt.x == hotbar.x && belt.y == hotbar.y + 25 && belt.getItem().getCount() == 9;
+		}), "Die Plätze liegen unter der Item-Leiste und zeigen die 9 Tränke");
 		context.takeScreenshot("qom_belt_chest");
 
 		server.runOnServer(s -> player(s).containerMenu.clicked(63, 0, ContainerInput.QUICK_MOVE, player(s)));
-		check(quiverItem(server, 0).isEmpty() && chest.countItem(Items.POTION) == 8
+		check(quiverItem(server, 0).isEmpty() && chest.countItem(Items.POTION) == 9
 			&& IntStream.range(0, 27).allMatch(i -> chest.getItem(i).getCount() <= 1),
-			"Umschalt-Klick legt die 8 Tränke einzeln in die Truhe");
+			"Umschalt-Klick legt die 9 Tränke einzeln in die Truhe");
 		server.runOnServer(s -> player(s).containerMenu.clicked(0, 0, ContainerInput.QUICK_MOVE, player(s)));
-		check(quiverItem(server, 0).getCount() == 1 && chest.countItem(Items.POTION) == 7,
+		check(quiverItem(server, 0).getCount() == 1 && chest.countItem(Items.POTION) == 8,
 			"Umschalt-Klick aus der Truhe legt den Trank zurück in den Trankgurt");
 		server.runOnServer(s -> player(s).closeContainer());
 		context.waitTicks(5);
 
 		// Braustand: 5 eigene Plätze, nur die 3 Flaschenplätze nehmen Tränke
-		server.runOnServer(s -> beltSlot(s, 1).set(swiftness.copyWithCount(8)));
+		server.runOnServer(s -> beltSlot(s, 1).set(swiftness.copyWithCount(9)));
 		context.waitTicks(5);
 		server.runOnServer(s -> player(s).openMenu(new SimpleMenuProvider((id, inventory, p) -> new BrewingStandMenu(id, inventory), Component.literal("Test"))));
 		context.waitTicks(5);
@@ -841,7 +841,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		context.takeScreenshot("qom_belt_brewing");
 		server.runOnServer(s -> player(s).containerMenu.clicked(5 + 36, 0, ContainerInput.QUICK_MOVE, player(s)));
 		check(server.computeOnServer(s -> IntStream.range(0, 3).allMatch(i -> player(s).containerMenu.slots.get(i).getItem().is(Items.POTION)))
-			&& quiverItem(server, 0).getCount() == 5, "Umschalt-Klick füllt die 3 Flaschenplätze des Braustands aus dem Trankgurt");
+			&& quiverItem(server, 0).getCount() == 6, "Umschalt-Klick füllt die 3 Flaschenplätze des Braustands aus dem Trankgurt");
 		server.runOnServer(s -> player(s).closeContainer());
 		context.waitTicks(5);
 		server.runOnServer(s -> beltSlot(s, 0).set(ItemStack.EMPTY));

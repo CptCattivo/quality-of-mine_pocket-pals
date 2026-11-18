@@ -22,7 +22,7 @@ import net.minecraft.world.item.component.TooltipProvider;
  * Der Inhalt von Gürtel, Köcher oder Trankgurt, gespeichert im Item selbst.
  * <p>
  * Der Behälter des Spiels ({@code minecraft:container}) verwirft beim Laden jeden Stapel, der größer ist als die normale
- * Stapelgröße. Im Trankgurt liegen aber bis zu 8 Tränke auf einem Platz, normal stapeln sie gar nicht. Deshalb gibt es
+ * Stapelgröße. Im Trankgurt liegen aber bis zu 9 Tränke auf einem Platz, normal stapeln sie gar nicht. Deshalb gibt es
  * diese eigene Komponente, die Stapel unverändert speichert.
  */
 public record BeltContents(List<Entry> entries) implements TooltipProvider {

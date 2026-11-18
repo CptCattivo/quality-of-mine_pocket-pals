@@ -7,7 +7,7 @@ rem Die Versionen stehen hier zentral und müssen zu gradle.properties passen.
 set "MC_VERSION=26.3"
 set "LOADER_VERSION=0.20.1"
 set "INSTALLER_VERSION=1.1.2"
-set "MOD_VERSION=3.1.0"
+set "MOD_VERSION=3.1.1"
 set "MOD_JAR=pocket-pals-%MOD_VERSION%.jar"
 
 set "PROJECT_DIR=%~dp0"
