@@ -128,6 +128,7 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 			testPokeball(context, server);
 			testBallUpgrades(server);
 			testRecaptureAndFlee(context, server);
+			testWaterCreatures(context, server);
 			testBelt(server);
 			testBeltClick(context, server);
 			testQuiver(context, server);
@@ -360,6 +361,84 @@ public final class PocketPalsClientGameTest implements FabricClientGameTest {
 		}
 		check(panicked, "Das Tier ist in Panik geraten und flieht");
 		server.runCommand("kill @e[type=minecraft:sheep]");
+		server.runCommand("kill @e[type=minecraft:item]");
+		server.runCommand("clear @a");
+	}
+
+	private static List<ItemEntity> filledBallItems(final TestServerContext server) {
+		return itemsOfClass(server, Pokeballs::isFilled);
+	}
+
+	/** Welche Arten fangbar sind, und ein echter Fang samt Freilassen eines Fischs. */
+	private static void testWaterCreatures(final ClientGameTestContext context, final TestServerContext server) {
+		flattenArea(server);
+		server.runCommand("clear @a");
+		server.runCommand("kill @e[type=minecraft:item]");
+		Map<EntityType<?>, Boolean> expected = new java.util.LinkedHashMap<>();
+		expected.put(EntityTypes.COD, true);
+		expected.put(EntityTypes.SALMON, true);
+		expected.put(EntityTypes.PUFFERFISH, true);
+		expected.put(EntityTypes.TROPICAL_FISH, true);
+		expected.put(EntityTypes.TADPOLE, true);
+		expected.put(EntityTypes.SQUID, true);
+		expected.put(EntityTypes.GLOW_SQUID, true);
+		expected.put(EntityTypes.DOLPHIN, true);
+		expected.put(EntityTypes.AXOLOTL, true);
+		expected.put(EntityTypes.NAUTILUS, true);
+		expected.put(EntityTypes.BAT, true);
+		expected.put(EntityTypes.ALLAY, true);
+		expected.put(EntityTypes.IRON_GOLEM, true);
+		expected.put(EntityTypes.SNOW_GOLEM, true);
+		expected.put(EntityTypes.COPPER_GOLEM, true);
+		expected.put(EntityTypes.ZOMBIE_NAUTILUS, false);
+		expected.put(EntityTypes.HOGLIN, false);
+		expected.put(EntityTypes.SHULKER, false);
+		expected.put(EntityTypes.ZOMBIE, false);
+		expected.put(EntityTypes.VILLAGER, false);
+		expected.put(EntityTypes.WANDERING_TRADER, false);
+		for (Map.Entry<EntityType<?>, Boolean> entry : expected.entrySet()) {
+			boolean catchable = server.computeOnServer(s -> {
+				ServerPlayer player = player(s);
+				net.minecraft.world.entity.Entity entity = entry.getKey().create(player.level(), EntitySpawnReason.COMMAND);
+				return ThrownPokeball.canCapture(entity, player);
+			});
+			check(catchable == entry.getValue(), EntityType.getKey(entry.getKey()).getPath() + (entry.getValue() ? " ist fangbar" : " ist nicht fangbar"));
+		}
+
+		// Ein Kabeljau mit 1 Leben wird gefangen und kommt beim Freilassen wieder heraus
+		ItemStack filled = null;
+		for (int attempt = 1; attempt <= 12 && filled == null; attempt++) {
+			double[] target = server.computeOnServer(s -> {
+				ServerPlayer player = player(s);
+				Mob cod = EntityTypes.COD.create(player.level(), EntitySpawnReason.COMMAND);
+				cod.snapTo(player.getX() + 4, player.getY(), player.getZ(), 0.0F, 0.0F);
+				cod.setNoAi(true);
+				player.level().addFreshEntity(cod);
+				cod.setHealth(1.0F);
+				return new double[] {cod.getX(), cod.getY() + cod.getBbHeight() / 2.0, cod.getZ()};
+			});
+			context.waitTicks(2);
+			throwBall(server, new ItemStack(Pokeballs.empty(BallType.HYPERBALL)), target[0], target[1], target[2]);
+			server.waitFor(s -> player(s).level().getEntitiesOfClass(ThrownPokeball.class, around(player(s))).isEmpty(), 300);
+			List<ItemEntity> items = filledBallItems(server);
+			if (items.isEmpty()) {
+				server.runCommand("kill @e[type=minecraft:cod]");
+			} else {
+				filled = server.computeOnServer(s -> items.getFirst().getItem().copy());
+			}
+		}
+		check(filled != null, "Ein Kabeljau mit 1 Leben ist nach höchstens 12 Versuchen gefangen");
+		ItemStack codBall = filled;
+		check(codBall.get(Pokeballs.CAUGHT_ANIMAL).type().getPath().equals("cod"), "Der Ball enthält den Kabeljau");
+		server.runCommand("kill @e[type=minecraft:item]");
+		server.runCommand("kill @e[type=minecraft:cod]");
+		server.waitFor(s -> player(s).level().getEntitiesOfClass(net.minecraft.world.entity.animal.fish.Cod.class, around(player(s))).isEmpty(), 100);
+		throwBall(server, codBall, server.computeOnServer(s -> player(s).getX() + 4), server.computeOnServer(s -> player(s).getY()), server.computeOnServer(s -> player(s).getZ()));
+		server.waitFor(s -> !player(s).level().getEntitiesOfClass(net.minecraft.world.entity.animal.fish.Cod.class, around(player(s))).isEmpty(), 200);
+		check(server.computeOnServer(s -> player(s).level().getEntitiesOfClass(net.minecraft.world.entity.animal.fish.Cod.class, around(player(s))).size()) == 1,
+			"Der freigelassene Kabeljau ist wieder in der Welt");
+		server.runCommand("kill @e[type=minecraft:cod]");
+		server.waitFor(s -> player(s).level().getEntitiesOfClass(ThrownPokeball.class, around(player(s))).isEmpty(), 100);
 		server.runCommand("kill @e[type=minecraft:item]");
 		server.runCommand("clear @a");
 	}

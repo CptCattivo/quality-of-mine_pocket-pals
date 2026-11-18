@@ -4,7 +4,7 @@ import de.qualityofmine.pocketpals.Feature;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.registries.Registries;
@@ -26,8 +26,8 @@ public final class PokeballFeature implements Feature {
 		UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> {
 			ItemStack ball = player.getItemInHand(hand);
 			// Der Rechtsklick gilt dem Ball, auch bei Haustieren, die sonst sitzen oder aufsteigen würden
-			if (player.isSpectator() || !Pokeballs.isEmpty(ball) || !(entity instanceof Animal animal)
-				|| !ThrownPokeball.isKnown(animal) || !ThrownPokeball.canCapture(animal, player)) {
+			if (player.isSpectator() || !Pokeballs.isEmpty(ball) || !ThrownPokeball.canCapture(entity, player)
+				|| !(entity instanceof Mob animal) || !ThrownPokeball.isKnown(animal)) {
 				return InteractionResult.PASS;
 			}
 			if (level instanceof ServerLevel server) {

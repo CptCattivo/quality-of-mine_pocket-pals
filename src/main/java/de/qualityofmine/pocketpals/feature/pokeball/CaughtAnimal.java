@@ -17,7 +17,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -39,7 +39,7 @@ public record CaughtAnimal(Identifier type, CompoundTag data) {
 	);
 
 	/** Nimmt das Tier auf. Das Tier selbst bleibt unverändert in der Welt und muss vom Aufrufer entfernt werden. */
-	public static CaughtAnimal of(final Animal animal) {
+	public static CaughtAnimal of(final Mob animal) {
 		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, animal.registryAccess());
 		animal.saveWithoutId(output);
 		return new CaughtAnimal(EntityType.getKey(animal.getType()), output.buildResult());

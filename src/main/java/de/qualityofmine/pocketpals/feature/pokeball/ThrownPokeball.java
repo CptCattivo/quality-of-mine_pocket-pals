@@ -14,7 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
@@ -84,13 +84,14 @@ public class ThrownPokeball extends ThrowableItemProjectile {
 	}
 
 	/** Ein Tier, das schon einmal in einem Ball war und sich ohne Risiko wieder einfangen lässt. */
-	public static boolean isKnown(final Animal animal) {
+	public static boolean isKnown(final Mob animal) {
 		return animal.entityTags().contains(CAUGHT_TAG);
 	}
 
 	/** Fremde Haustiere sind tabu. Ihr Besitzer darf sie aber fangen, zum Beispiel für den Umzug. */
-	public static boolean canCapture(final Animal animal, final Entity thrower) {
-		if (!animal.isAlive()) {
+	/** Lässt sich das Lebewesen fangen? Nur fangbare Arten, lebend und keine fremden Haustiere. */
+	public static boolean canCapture(final Entity entity, final Entity thrower) {
+		if (!(entity instanceof Mob animal) || !Catchables.isCatchable(animal) || !animal.isAlive()) {
 			return false;
 		}
 		return !(animal instanceof OwnableEntity pet) || pet.getOwner() == null || pet.getOwner() == thrower;
@@ -100,7 +101,7 @@ public class ThrownPokeball extends ThrowableItemProjectile {
 	 * Fängt ein bekanntes Tier sofort mit der Animation: Der Ball erscheint am Tier, es verschwindet darin und der Ball
 	 * klickt zu. Der Aufrufer nimmt den Ball aus der Hand.
 	 */
-	public static void captureKnown(final ServerLevel server, final Player player, final ItemStack ball, final Animal animal) {
+	public static void captureKnown(final ServerLevel server, final Player player, final ItemStack ball, final Mob animal) {
 		ThrownPokeball thrown = new ThrownPokeball(server, player, ball.copyWithCount(1));
 		thrown.setPos(animal.position().add(0.0, animal.getBbHeight() / 2.0, 0.0));
 		server.addFreshEntity(thrown);
@@ -140,7 +141,7 @@ public class ThrownPokeball extends ThrowableItemProjectile {
 		Entity target = result.getEntity();
 		if (Pokeballs.isFilled(getItem())) {
 			startRelease(result.getLocation());
-		} else if (target instanceof Animal animal && canCapture(animal, getOwner())) {
+		} else if (canCapture(target, getOwner()) && target instanceof Mob animal) {
 			startCapture(animal);
 		} else {
 			dropBall();
@@ -171,7 +172,7 @@ public class ThrownPokeball extends ThrowableItemProjectile {
 
 	// --- Fangen --------------------------------------------------------------------------------------------------
 
-	private void startCapture(final Animal animal) {
+	private void startCapture(final Mob animal) {
 		ServerLevel server = (ServerLevel) level();
 		if (isKnown(animal)) {
 			success = true;
@@ -204,7 +205,7 @@ public class ThrownPokeball extends ThrowableItemProjectile {
 	}
 
 	/** Ein gefangenes wildes Tier gehört danach dem Fänger. Zahme Tiere bleiben, wie sie sind. */
-	private static void tame(final Animal animal, final Player player) {
+	private static void tame(final Mob animal, final Player player) {
 		if (animal instanceof TamableAnimal pet && !pet.isTame()) {
 			pet.tame(player);
 		} else if (animal instanceof AbstractHorse horse && !horse.isTamed()) {

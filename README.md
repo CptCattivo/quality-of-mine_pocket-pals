@@ -109,8 +109,12 @@ Bälle zum Fangen und Mitnehmen von Tieren, wie im Anime. Rechtsklick wirft sie 
   mit dem leeren Ball in der Hand mit der rechten Maustaste auf das Tier, auch bei Haustieren, die sonst sitzen oder
   aufsteigen würden. Der Ball erscheint, das Tier verschwindet darin, und es klickt nach einem Wackeln. Ein Wurf auf
   das Tier wirkt genauso.
-- **Welche Tiere:** Alle Tiere wie Kuh, Schaf, Pferd, Wolf oder Katze, nicht aber Monster, Dorfbewohner oder Fische. Haustiere
-  eines anderen Spielers sind tabu.
+- **Welche Lebewesen:** Alle Tiere wie Kuh, Schaf, Pferd, Wolf oder Katze, dazu die Wassertiere (Fische, Kaulquappen, Tintenfische,
+  Delfine, Axolotl und Nautilus), Fledermäuse, der Hilfsgeist (Allay) sowie Eisen-, Schnee- und Kupfergolem. Nicht fangbar sind
+  Monster, auch solche, die das Spiel als Tier oder Golem führt (Hoglin, Zombie-Nautilus, Shulker), sowie Dorfbewohner und
+  wandernde Händler. Haustiere eines anderen Spielers sind tabu.
+- **Wassertiere an Land:** Wer einen Fisch oder Delfin an Land freilässt, setzt ihn aufs Trockene. Wie im Originalspiel
+  zappeln Fische dort und sterben bald, Delfine trocknen nach 2 Minuten aus.
 - **Zähmung:** Ein wildes Tier, das man zähmen kann (Wolf, Katze, Papagei, Pferd, Esel und so weiter), ist nach einem gelungenen Fang
   gezähmt und gehört dem Fänger. Beim Ausbrechen bleibt es wild.
 - **Gefangenes Tier:** Der Name zeigt es in Klammern, zum Beispiel *Pokéball (Schaf)*. Das Tier bleibt mit allem erhalten:
