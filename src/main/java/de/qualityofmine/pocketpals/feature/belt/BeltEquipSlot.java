@@ -3,7 +3,7 @@ package de.qualityofmine.pocketpals.feature.belt;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-/** Der Platz im Inventar, auf dem Gürtel oder Köcher getragen werden. Er nimmt nur diese beiden an. */
+/** Der Platz im Inventar, auf dem Gürtel, Köcher oder Trankgurt getragen werden. Er nimmt nur diese an. */
 public final class BeltEquipSlot extends Slot {
 	BeltEquipSlot(final BeltEquipContainer container) {
 		super(container, 0, BeltFeature.EQUIP_X, BeltFeature.EQUIP_Y);

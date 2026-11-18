@@ -23,7 +23,7 @@ abstract class InventoryMixin {
 	private int pocketpals$countBefore;
 
 	/**
-	 * Volle Bälle und Pfeile kommen beim Aufheben zuerst in Gürtel oder Köcher. Was dort keinen Platz findet, geht wie
+	 * Volle Bälle, Pfeile und Tränke kommen beim Aufheben zuerst in Gürtel, Köcher oder Trankgurt. Was dort keinen Platz findet, geht wie
 	 * gewohnt ins normale Inventar.
 	 */
 	@Inject(method = "add(ILnet/minecraft/world/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)

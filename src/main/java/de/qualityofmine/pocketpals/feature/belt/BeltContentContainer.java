@@ -5,7 +5,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-/** Die 6 Plätze in Gürtel oder Köcher. Sie arbeiten direkt auf dem Inhalt des Halters, ohne getragenes Item sind sie leer. */
+/** Die 6 Plätze in Gürtel, Köcher oder Trankgurt. Sie arbeiten direkt auf dem Inhalt des Halters, ohne getragenes Item sind sie leer. */
 final class BeltContentContainer implements Container {
 	private final Player player;
 

@@ -3,7 +3,9 @@ package de.qualityofmine.pocketpals.mixin;
 import de.qualityofmine.pocketpals.feature.belt.BeltFeature;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerMenu.class)
@@ -26,8 +29,8 @@ abstract class AbstractContainerMenuMixin {
 	private boolean pocketpals$movedIntoBelt;
 
 	/**
-	 * Umschalt-Klick aus einer Truhe, einem Ofen und so weiter ins Spielerinventar legt Pfeile und volle Bälle zuerst in
-	 * Köcher oder Gürtel. Im eigenen Inventar gilt das nicht, sonst kämen Gegenstände aus dem Köcher sofort wieder hinein.
+	 * Umschalt-Klick aus einer Truhe, einem Ofen und so weiter ins Spielerinventar legt Pfeile, volle Bälle und Tränke zuerst
+	 * in Köcher, Gürtel oder Trankgurt. Im eigenen Inventar gilt das nicht, sonst kämen Gegenstände aus dem Köcher sofort wieder hinein.
 	 */
 	@Inject(method = "moveItemStackTo", at = @At("HEAD"), cancellable = true)
 	private void pocketpals$fillBeltFirst(final ItemStack stack, final int start, final int end, final boolean reverse,
@@ -49,6 +52,16 @@ abstract class AbstractContainerMenuMixin {
 		final CallbackInfoReturnable<Boolean> cir) {
 		if (pocketpals$movedIntoBelt && !cir.getReturnValueZ()) {
 			cir.setReturnValue(true);
+		}
+	}
+
+	/** Zahlentaste über einem Platz im Trankgurt: Ein Stapel von 8 Tränken darf nicht als Ganzes auf einen Inventarplatz. */
+	@Inject(method = "doClick", at = @At("HEAD"), cancellable = true)
+	private void pocketpals$swapOversizedStack(final int slotIndex, final int buttonNum, final ContainerInput containerInput, final Player player,
+		final CallbackInfo ci) {
+		if (containerInput == ContainerInput.SWAP && slotIndex >= 0 && slotIndex < this.slots.size()
+			&& BeltFeature.swapOversizedStack(this.slots.get(slotIndex), player.getInventory(), buttonNum)) {
+			ci.cancel();
 		}
 	}
 }

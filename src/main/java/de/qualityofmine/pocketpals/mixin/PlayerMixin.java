@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Player.class)
 abstract class PlayerMixin {
-	/** Gürtel und Köcher fallen beim Tod wie die Rüstung zu Boden. */
+	/** Gürtel, Köcher und Trankgurt fallen beim Tod wie die Rüstung zu Boden. */
 	@Inject(method = "dropEquipment", at = @At("TAIL"))
 	private void pocketpals$dropBelt(final ServerLevel level, final CallbackInfo ci) {
 		BeltFeature.dropOnDeath((Player) (Object) this, level);

@@ -6,7 +6,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-/** Client an Server: Dieser Platz in Gürtel oder Köcher ist gewählt (0 bis 5). Der Bogen verschießt den Pfeil daraus. */
+/** Client an Server: Dieser Platz in Gürtel, Köcher oder Trankgurt ist gewählt (0 bis 5). Der Bogen verschießt den Pfeil daraus. */
 public record SelectBeltSlotPayload(int slot) implements CustomPacketPayload {
 	public static final Type<SelectBeltSlotPayload> TYPE = new Type<>(PocketPals.id("select_belt_slot"));
 	public static final StreamCodec<ByteBuf, SelectBeltSlotPayload> STREAM_CODEC =

@@ -5,6 +5,7 @@
 	"client": [
 		"AbstractRecipeBookScreenMixin",
 		"InventoryScreenMixin",
+		"LocalPlayerMixin",
 		"MinecraftMixin",
 		"MouseHandlerMixin"
 	],

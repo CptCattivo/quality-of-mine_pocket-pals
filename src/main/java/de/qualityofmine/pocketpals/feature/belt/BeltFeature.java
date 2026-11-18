@@ -2,21 +2,23 @@ package de.qualityofmine.pocketpals.feature.belt;
 
 import de.qualityofmine.pocketpals.Feature;
 import de.qualityofmine.pocketpals.PocketPals;
-import de.qualityofmine.pocketpals.feature.pokeball.PokeballItem;
-import de.qualityofmine.pocketpals.feature.pokeball.Pokeballs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.item.v1.ItemComponentTooltipProviderRegistry;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
@@ -25,8 +27,9 @@ import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.gamerules.GameRules;
 
 /**
- * Gürtel und Köcher mit je 6 Plätzen. Beide werden auf demselben Platz im Inventar getragen, neben den Rüstungsplätzen,
- * und zwar immer nur einer davon. Der Gürtel trägt Pokébälle mit gefangenem Tier, der Köcher Pfeile.
+ * Gürtel, Köcher und Trankgurt mit je 6 Plätzen. Alle werden auf demselben Platz im Inventar getragen, neben den
+ * Rüstungsplätzen, und zwar immer nur einer davon. Der Gürtel trägt Pokébälle mit gefangenem Tier, der Köcher Pfeile und
+ * der Trankgurt Tränke.
  */
 public final class BeltFeature implements Feature {
 	public static final int CONTENT_SIZE = 6;
@@ -36,6 +39,9 @@ public final class BeltFeature implements Feature {
 	public static final int CONTENT_X = 8;
 	public static final int CONTENT_Y = 167;
 	public static final int CONTENT_STEP = 18;
+	/** Die Plätze 0 bis 8 der Item-Leiste und 40 für die zweite Hand, erreichbar per Zahlentaste bzw. F im Inventar. */
+	private static final int HOTBAR_SIZE = 9;
+	private static final int OFFHAND_SLOT = 40;
 
 	private static final AttachmentType<BeltHolder> HOLDER = AttachmentRegistry.<BeltHolder>builder()
 		.initializer(BeltHolder::new)
@@ -47,12 +53,12 @@ public final class BeltFeature implements Feature {
 		return player.getAttachedOrCreate(HOLDER);
 	}
 
-	/** Der angelegte Gürtel oder Köcher samt Inhalt, leer ohne. */
+	/** Der angelegte Gürtel, Köcher oder Trankgurt samt Inhalt, leer ohne. */
 	public static ItemStack beltOf(final Player player) {
 		return holderOf(player).get();
 	}
 
-	/** Erst der Platz für Gürtel oder Köcher, danach die 6 Plätze darin. */
+	/** Erst der Platz für Gürtel, Köcher oder Trankgurt, danach die 6 Plätze darin. */
 	public static List<Slot> createSlots(final Player player) {
 		List<Slot> slots = new ArrayList<>();
 		slots.add(new BeltEquipSlot(new BeltEquipContainer(player)));
@@ -69,7 +75,7 @@ public final class BeltFeature implements Feature {
 	}
 
 	/**
-	 * Gürtel und Köcher fallen beim Tod mit ihrem Inhalt zu Boden wie die Rüstung, außer die Spielregel für das Behalten
+	 * Gürtel, Köcher und Trankgurt fallen beim Tod mit ihrem Inhalt zu Boden wie die Rüstung, außer die Spielregel für das Behalten
 	 * des Inventars gilt.
 	 */
 	public static void dropOnDeath(final Player player, final ServerLevel level) {
@@ -82,7 +88,7 @@ public final class BeltFeature implements Feature {
 	}
 
 	/**
-	 * Legt einen Gegenstand in Gürtel oder Köcher, sofern er dort hineinpasst: erst auf gleiche Stapel, dann in freie Plätze.
+	 * Legt einen Gegenstand in Gürtel, Köcher oder Trankgurt, sofern er dort hineinpasst: erst auf gleiche Stapel, dann in freie Plätze.
 	 * Was keinen Platz findet, bleibt in {@code stack}. Gibt true zurück, wenn etwas hineingelegt wurde.
 	 */
 	public static boolean insert(final Player player, final ItemStack stack) {
@@ -92,7 +98,7 @@ public final class BeltFeature implements Feature {
 			return false;
 		}
 		int before = stack.getCount();
-		int limit = Math.min(worn.contentStackSize(), stack.getMaxStackSize());
+		int limit = worn.contentStackSize();
 		List<ItemStack> contents = holder.contents();
 		for (int i = 0; i < CONTENT_SIZE && !stack.isEmpty(); i++) {
 			ItemStack target = contents.get(i);
@@ -129,36 +135,53 @@ public final class BeltFeature implements Feature {
 		return contents.stream().filter(stack -> !stack.isEmpty() && supported.test(stack)).findFirst().orElse(ItemStack.EMPTY);
 	}
 
+	/** Benutzt den Inhalt eines Platzes, ohne dass das Inventar offen sein muss. Was dabei passiert, bestimmt das getragene Item. */
+	public static void useSlot(final ServerPlayer player, final int slot) {
+		BeltHolder holder = holderOf(player);
+		WearableItem worn = holder.wornItem();
+		if (slot < 0 || slot >= CONTENT_SIZE || player.isSpectator() || worn == null) {
+			return;
+		}
+		worn.useContent(player, holder, slot);
+	}
+
 	/**
-	 * Wirft den Ball aus einem Platz des Gürtels, ohne dass das Inventar offen sein muss. Der Platz ist danach leer,
-	 * ein leerer Ball bleibt wie beim normalen Wurf nach dem Freilassen am Boden liegen.
+	 * Zahlentaste oder F über einem Platz im Trankgurt: Ein Stapel über der normalen Größe, etwa 8 Tränke, passt nicht auf
+	 * einen Inventarplatz. Dann wandert nur so viel, wie normal auf einen Platz passt, und nur auf einen freien. Gibt true
+	 * zurück, wenn der Tausch damit erledigt ist und das Spiel ihn nicht mehr selbst ausführen darf.
 	 */
-	public static void throwBall(final ServerPlayer player, final int slot) {
-		if (slot < 0 || slot >= CONTENT_SIZE || player.isSpectator() || !(holderOf(player).wornItem() instanceof BeltItem)) {
-			return;
+	public static boolean swapOversizedStack(final Slot slot, final Inventory inventory, final int inventorySlot) {
+		boolean validTarget = inventorySlot >= 0 && inventorySlot < HOTBAR_SIZE || inventorySlot == OFFHAND_SLOT;
+		ItemStack content = slot.getItem();
+		if (!(slot instanceof BeltContentSlot) || !validTarget || content.getCount() <= content.getMaxStackSize()) {
+			return false;
 		}
-		BeltContentContainer content = new BeltContentContainer(player);
-		ItemStack stack = content.getItem(slot);
-		if (!Pokeballs.isFilled(stack) || !(stack.getItem() instanceof PokeballItem ball)) {
-			return;
+		if (inventory.getItem(inventorySlot).isEmpty()) {
+			inventory.setItem(inventorySlot, slot.remove(content.getMaxStackSize()));
 		}
-		ball.throwBall(player.level(), player, stack);
-		content.removeItemNoUpdate(slot);
+		return true;
 	}
 
 	@Override
 	public void initialize() {
-		PayloadTypeRegistry.serverboundPlay().register(ThrowBeltBallPayload.TYPE, ThrowBeltBallPayload.STREAM_CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(UseBeltSlotPayload.TYPE, UseBeltSlotPayload.STREAM_CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(SelectBeltSlotPayload.TYPE, SelectBeltSlotPayload.STREAM_CODEC);
-		ServerPlayNetworking.registerGlobalReceiver(ThrowBeltBallPayload.TYPE,
-			(payload, context) -> throwBall(context.player(), payload.slot()));
+		PayloadTypeRegistry.serverboundPlay().register(StopDrinkingPayload.TYPE, StopDrinkingPayload.STREAM_CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(UseBeltSlotPayload.TYPE,
+			(payload, context) -> useSlot(context.player(), payload.slot()));
 		ServerPlayNetworking.registerGlobalReceiver(SelectBeltSlotPayload.TYPE,
 			(payload, context) -> holderOf(context.player()).select(payload.slot()));
+		ServerPlayNetworking.registerGlobalReceiver(StopDrinkingPayload.TYPE,
+			(payload, context) -> holderOf(context.player()).stopDrinking());
+		ServerTickEvents.END_SERVER_TICK.register(server -> server.getPlayerList().getPlayers().forEach(BandolierItem::tickDrinking));
 		Belts.load();
+		// Der Inhalt erscheint im Tooltip an derselben Stelle wie bei einer Shulkerkiste
+		ItemComponentTooltipProviderRegistry.addAfter(DataComponents.CONTAINER, Belts.CONTENTS);
 		ResourceKey<CreativeModeTab> tools = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.withDefaultNamespace("tools_and_utilities"));
 		CreativeModeTabEvents.modifyOutputEvent(tools).register(output -> {
 			output.accept(Belts.BELT);
 			output.accept(Belts.QUIVER);
+			output.accept(Belts.BANDOLIER);
 		});
 	}
 }

@@ -5,7 +5,8 @@
 	"item.qualityofmine.superball": "Superball",
 	"item.qualityofmine.hyperball": "Hyperball",
 	"item.qualityofmine.belt": "Gürtel",
-	"key.qualityofmine.throw_belt_ball": "Ball aus dem Gürtel werfen",
+	"key.qualityofmine.throw_belt_ball": "Gürtel oder Trankgurt benutzen",
 	"key.category.qualityofmine.pocketpals": "Pocket Pals",
-	"item.qualityofmine.quiver": "Köcher"
+	"item.qualityofmine.quiver": "Köcher",
+	"item.qualityofmine.bandolier": "Trankgurt"
 }

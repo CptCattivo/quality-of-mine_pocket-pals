@@ -24,7 +24,7 @@ public final class BeltPanel {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, leftPos + BeltFeature.EQUIP_X - 1, topPos + BeltFeature.EQUIP_Y - 1,
 			0.0F, 0.0F, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
 		Player player = Minecraft.getInstance().player;
-		// Die 6 Plätze gibt es nur mit angelegtem Gürtel oder Köcher
+		// Die 6 Plätze gibt es nur mit angelegtem Gürtel, Köcher oder Trankgurt
 		if (player != null && BeltFeature.holderOf(player).wornItem() != null && !player.hasInfiniteMaterials()) {
 			graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL_TEXTURE, leftPos + PANEL_X, topPos + PANEL_Y,
 				0.0F, 0.0F, PANEL_WIDTH, PANEL_HEIGHT, PANEL_WIDTH, PANEL_HEIGHT);

@@ -4,7 +4,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-/** Einer der 6 Plätze in Gürtel oder Köcher. Was hineinpasst, bestimmt das getragene Item. */
+/** Einer der 6 Plätze in Gürtel, Köcher oder Trankgurt. Was hineinpasst, bestimmt das getragene Item. */
 public final class BeltContentSlot extends Slot {
 	private final Player player;
 
@@ -25,7 +25,13 @@ public final class BeltContentSlot extends Slot {
 		return worn == null ? 1 : worn.contentStackSize();
 	}
 
-	/** Ohne Gürtel oder Köcher gibt es keine Plätze. */
+	/** Das getragene Item bestimmt die Stapelgröße allein, Tränke stapeln sich im Trankgurt also auch über ihre normale Größe. */
+	@Override
+	public int getMaxStackSize(final ItemStack stack) {
+		return getMaxStackSize();
+	}
+
+	/** Ohne Gürtel, Köcher oder Trankgurt gibt es keine Plätze. */
 	@Override
 	public boolean isActive() {
 		return BeltFeature.holderOf(player).wornItem() != null;
