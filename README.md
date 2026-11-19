@@ -8,7 +8,7 @@ unabhängig voneinander.
 
 | Mod | Projekt | Inhalt |
 |---|---|---|
-| Extra Enchants | `extra-enchants` | Fünf neue Verzauberungen |
+| Extra Enchants | `extra-enchants` | Fünf neue Verzauberungen und die Elytra-Rüstung |
 | Tidy Inventory | `tidy-inventory` | Items nicht aufheben und Mülleimer im Inventar |
 | Wide Hotbar | `wide-hotbar` | Item-Leiste mit 11 Plätzen |
 | Sleep Lapse | `sleep-lapse` | Zeitraffer beim Schlafen |
