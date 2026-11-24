@@ -75,8 +75,16 @@ dependencies {
 	}
 }
 
+def productionRunDir = layout.buildDirectory.dir('run/production')
+
 tasks.register('productionClientTest', net.fabricmc.loom.task.prod.ClientProductionRunTask) {
 	mods.from(tasks.jar, gametestJar, configurations.productionTestMods)
 	jvmArgs.add('-Dfabric.client.gametest')
-	runDir = layout.buildDirectory.dir('run/production')
+	runDir = productionRunDir
+	// Der dedizierte Testserver startet nur mit bestätigter EULA. Loom schreibt sie (eula = true oben) nur für runClientGameTest.
+	doFirst {
+		File eula = productionRunDir.get().file('eula.txt').asFile
+		eula.parentFile.mkdirs()
+		eula.text = 'eula=true\n'
+	}
 }
